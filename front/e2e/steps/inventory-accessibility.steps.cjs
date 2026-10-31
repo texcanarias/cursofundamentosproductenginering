@@ -96,12 +96,10 @@ async function inspect(world, name) {
       element.getBoundingClientRect().width > 0 && !element.closest('[aria-hidden="true"]');
     return {
       fits: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
-      buttons: [...document.querySelectorAll('button')]
-        .filter(visible)
-        .map((element) => ({
-          width: element.getBoundingClientRect().width,
-          height: element.getBoundingClientRect().height,
-        })),
+      buttons: [...document.querySelectorAll('button')].filter(visible).map((element) => ({
+        width: element.getBoundingClientRect().width,
+        height: element.getBoundingClientRect().height,
+      })),
       sizes: [...document.querySelectorAll('h1,h2,dt,dd,input,.mdc-button__label')]
         .filter(visible)
         .map((element) => parseFloat(getComputedStyle(element).fontSize)),

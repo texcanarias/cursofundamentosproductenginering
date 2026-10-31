@@ -94,7 +94,12 @@
       </ul>
     }
   } @else if (view() === 'create' || view() === 'edit') {
-    <app-lot-form [lot]="selected()" [pending]="saving()" (save)="save($event)" (cancel)="back()" />
+    <app-lot-form
+      [lot]="selected()"
+      [pending]="saving()"
+      (save)="save($event)"
+      (cancelRequested)="back()"
+    />
   } @else if (selected(); as lot) {
     <section class="detail" [attr.aria-label]="lot.nombreProducto">
       <h2 class="lot-name">{{ lot.nombreProducto }}</h2>

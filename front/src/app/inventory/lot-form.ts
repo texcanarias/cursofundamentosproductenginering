@@ -22,7 +22,7 @@ export class LotForm {
   readonly lot = input<Lot | null>(null);
   readonly pending = input(false);
   readonly save = output<LotData>();
-  readonly cancel = output<void>();
+  readonly cancelRequested = output<void>();
   readonly submitted = signal(false);
   private readonly element: ElementRef<HTMLElement> = inject(ElementRef);
   readonly form = inject(FormBuilder).nonNullable.group({

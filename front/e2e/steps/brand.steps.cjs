@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const { Then, When } = require('@cucumber/cucumber');
 
 Then('reconozco A la par en la cabecera y el título de la página', async function () {
-  assert.equal(await this.page.title(), 'Inventario · A la par');
+  assert.equal(await this.page.title(), 'A la par · Gestión comunitaria');
   assert.equal(
     await this.page.getByRole('link', { name: 'A la par Gestión comunitaria, inicio' }).count(),
     1,

@@ -28,7 +28,12 @@
       <mat-icon aria-hidden="true">save</mat-icon>
       {{ pending() ? 'Guardando…' : 'Guardar producto' }}
     </button>
-    <button matButton="outlined" type="button" [disabled]="pending()" (click)="cancel.emit()">
+    <button
+      matButton="outlined"
+      type="button"
+      [disabled]="pending()"
+      (click)="cancelRequested.emit()"
+    >
       Cancelar
     </button>
   </div>
