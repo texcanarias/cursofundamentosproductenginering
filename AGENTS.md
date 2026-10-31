@@ -39,11 +39,25 @@ El front de usar:
 
 ## Estructura
 
-| Tecnología | Ruta    |
-| ---------- | ------- |
-| Docker     | docker/ |
-| front      | front/  |
-| back       | back/   |
+| Tecnología | Ruta    | Descripcion      |
+| ---------- | ------- | ---------------- |
+| Docker     | docker/ | Docker           |
+| front      | front/  | Front            |
+| back       | back/   | Back             |
+| spec       | spec/   | Especificaciones |
+
+## Spec development
+
+Las especificaciones deben numerarse en orden de creación.
+Cada especificacion debe tener el fichero de especificacion, un plan y un fichero de seguimiento
+
+## Test
+
+Todas las features deben estar redactadas en Gherkin para poder testearlas
+
+Deben usarse test unitarios
+
+Deben hacerse test de integración
 
 ## La solución será
 
