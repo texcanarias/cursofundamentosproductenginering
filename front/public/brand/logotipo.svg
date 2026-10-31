@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 96" role="img" aria-labelledby="title">
+  <title id="title">A la par</title>
+  <path fill="#14634f" d="M8 70V43a23 23 0 0 1 46 0v27H39V43a8 8 0 0 0-16 0v27Z"/>
+  <path fill="#f4cc4c" d="M42 70V43a23 23 0 0 1 46 0v27H73V43a8 8 0 0 0-16 0v27Z"/>
+  <path fill="#bf4439" d="M42 55h15v15H42Z"/>
+  <text x="106" y="61" fill="#14634f" font-family="'Atkinson Hyperlegible',Verdana,sans-serif" font-size="36" font-weight="700">A la par</text>
+</svg>

@@ -1,9 +1,9 @@
 {
-  "name": "Gestión de apoyo alimentario",
-  "short_name": "Apoyo",
+  "name": "A la par · Gestión comunitaria",
+  "short_name": "A la par",
   "display": "standalone",
-  "theme_color": "#005cbb",
-  "background_color": "#f6f8fc",
+  "theme_color": "#14634f",
+  "background_color": "#f3f6f4",
   "scope": "./",
   "start_url": "./",
   "icons": [

@@ -1,5 +1,9 @@
 const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
+const { mkdtemp, rm, writeFile } = require('node:fs/promises');
+const { once } = require('node:events');
+const { join } = require('node:path');
+const { tmpdir } = require('node:os');
 const {
   After,
   AfterAll,
@@ -13,33 +17,62 @@ const {
 const { chromium } = require('@playwright/test');
 
 const frontendUrl = 'http://127.0.0.1:4300';
+const backendUrl = 'http://127.0.0.1:4302';
 let frontendProcess;
+let backendProcess;
+let directory;
+let csvPath;
 let browser;
+let context;
 let page;
 
 setDefaultTimeout(30_000);
 
 BeforeAll(async () => {
+  await startBackend();
   frontendProcess = spawn(
     process.execPath,
-    ['node_modules/@angular/cli/bin/ng.js', 'serve', '--host=127.0.0.1', '--port=4300'],
+    [
+      'node_modules/@angular/cli/bin/ng.js',
+      'serve',
+      '--host=127.0.0.1',
+      '--port=4300',
+      '--proxy-config=e2e/proxy.conf.cjs',
+    ],
     { cwd: process.cwd(), stdio: 'ignore' },
   );
-  await waitForFrontend();
+  await waitForService(frontendUrl, frontendProcess);
   browser = await chromium.launch({ headless: true });
 });
 
-Before(async () => {
-  page = await browser.newPage();
+Before(async function () {
+  await writeFile(csvPath, '', 'utf8');
+  context = await browser.newContext();
+  page = await context.newPage();
+  this.page = page;
+  this.frontendUrl = frontendUrl;
+  this.backendUrl = backendUrl;
+  this.requests = [];
+  page.on('request', (request) => {
+    if (request.url().includes('/api/lotes')) {
+      this.requests.push({
+        method: request.method(),
+        url: request.url(),
+        body: request.postDataJSON(),
+      });
+    }
+  });
 });
 
 After(async () => {
-  await page?.close();
+  await context?.close();
 });
 
 AfterAll(async () => {
   await browser?.close();
-  frontendProcess?.kill();
+  await stopProcess(frontendProcess);
+  await stopProcess(backendProcess);
+  if (directory) await rm(directory, { recursive: true, force: true });
 });
 
 Given('el frontend está disponible', async () => {
@@ -56,13 +89,35 @@ Then('existe la región principal de la aplicación', async () => {
   assert.equal(await mainRegion.count(), 1);
 });
 
-async function waitForFrontend() {
+async function waitForService(url, process) {
   for (let attempt = 0; attempt < 30; attempt += 1) {
-    if (frontendProcess.exitCode !== null) throw new Error('El servidor Angular terminó.');
+    if (process.exitCode !== null) throw new Error(`El servidor terminó: ${url}`);
     try {
-      if ((await fetch(frontendUrl)).ok) return;
+      if ((await fetch(url)).ok) return;
     } catch {}
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
-  throw new Error('Angular no respondió dentro del tiempo esperado.');
+  throw new Error(`El servidor no respondió: ${url}`);
+}
+
+async function startBackend() {
+  directory = await mkdtemp(join(tmpdir(), 'a-la-par-e2e-'));
+  csvPath = join(directory, 'lotes.csv');
+  backendProcess = spawn(
+    process.execPath,
+    ['--import', '../back/node_modules/tsx/dist/loader.mjs', '../back/src/main.ts'],
+    {
+      cwd: process.cwd(),
+      stdio: 'ignore',
+      env: { ...process.env, PORT: '4302', LOTES_CSV_PATH: csvPath },
+    },
+  );
+  await waitForService(`${backendUrl}/api/health`, backendProcess);
+}
+
+async function stopProcess(process) {
+  if (!process || process.exitCode !== null) return;
+  const exited = once(process, 'exit');
+  process.kill();
+  await exited;
 }

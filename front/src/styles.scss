@@ -1,52 +1,140 @@
-// Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
-// Learn more about theming and how to use it for your application's
-// custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
 
+@font-face {
+  font-family: 'Material Icons';
+  src: url('/fonts/MaterialIcons-Regular.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+}
+
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: 400;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
+  font-feature-settings: 'liga';
+}
+
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  src: url('/fonts/AtkinsonHyperlegible-Regular.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Atkinson Hyperlegible';
+  src: url('/fonts/AtkinsonHyperlegible-Bold.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
 html {
-  height: 100%;
+  min-height: 100%;
+  font-size: 112.5%;
   @include mat.theme(
     (
       color: (
-        primary: mat.$azure-palette,
-        tertiary: mat.$blue-palette,
+        primary: mat.$green-palette,
+        tertiary: mat.$yellow-palette,
       ),
-      typography: Roboto,
+      typography: 'Atkinson Hyperlegible',
       density: 0,
     )
   );
+  @include mat.theme-overrides(
+    (
+      primary: #14634f,
+      on-primary: #ffffff,
+      tertiary: #f4cc4c,
+      on-tertiary: #20352c,
+      surface: #ffffff,
+      on-surface: #20352c,
+      outline: #64746d,
+      body-large-size: 1rem,
+      body-medium-size: 1rem,
+      body-small-size: 1rem,
+      label-large-size: 1rem,
+      label-medium-size: 1rem,
+      label-small-size: 1rem,
+      body-large-tracking: 0,
+      body-medium-tracking: 0,
+      body-small-tracking: 0,
+      label-large-tracking: 0,
+      label-medium-tracking: 0,
+      label-small-tracking: 0,
+    )
+  );
+  --brand-green: #14634f;
+  --brand-yellow: #f4cc4c;
+  --brand-coral: #bf4439;
+  --brand-ink: #20352c;
+  --brand-muted: #52635a;
+  --brand-surface: #ffffff;
+  --brand-background: #f3f6f4;
+  --brand-border: #64746d;
 }
 
 body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
   color-scheme: light;
-
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-body-medium);
-
-  // Reset the user agent margin.
+  background: var(--brand-background);
+  color: var(--brand-ink);
+  font-family: 'Atkinson Hyperlegible', Verdana, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  letter-spacing: 0;
   margin: 0;
-  height: 100%;
+  min-height: 100vh;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  letter-spacing: 0;
+}
+
+button,
+[matButton],
+[matIconButton] {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+:focus-visible {
+  outline: 3px solid var(--brand-green);
+  outline-offset: 4px;
+}
+
+::selection {
+  background: var(--brand-yellow);
+  color: var(--brand-ink);
 }
 
 .skip-link {
   position: absolute;
   left: -10000px;
   z-index: 1000;
+  font-weight: 700;
 }
 
 .skip-link:focus {
   top: 1rem;
   left: 1rem;
   padding: 0.75rem 1rem;
-  background: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
+  background: var(--brand-surface);
+  color: var(--brand-green);
 }

@@ -1,0 +1,72 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  border-top: 8px solid var(--brand-yellow);
+}
+
+.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  padding: 1.25rem;
+  background: var(--brand-surface);
+  border-bottom: 1px solid var(--brand-border);
+}
+
+.brand {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 100%;
+  min-height: 64px;
+  color: var(--brand-green);
+  text-decoration: none;
+}
+
+.brand img {
+  flex: 0 0 64px;
+}
+
+.brand-name {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.brand-purpose {
+  display: block;
+  margin-top: 0.3rem;
+  color: var(--brand-ink);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.brand-motto {
+  margin: 0;
+  padding-left: 0.75rem;
+  border-left: 4px solid var(--brand-coral);
+  color: var(--brand-muted);
+}
+
+main {
+  width: min(100%, 72rem);
+  min-height: 60vh;
+  margin-inline: auto;
+  padding: 1.25rem;
+}
+
+@media (min-width: 48rem) {
+  .app-header {
+    padding: 1.5rem 2.5rem;
+  }
+
+  main {
+    padding: 2rem 2.5rem;
+  }
+}

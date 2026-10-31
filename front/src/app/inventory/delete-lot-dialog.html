@@ -1,0 +1,32 @@
+<h2 mat-dialog-title>¿Eliminar esta partida?</h2>
+<mat-dialog-content class="delete-content" [attr.aria-busy]="pending()">
+  <p class="lot-name">{{ lot.nombreProducto }}</p>
+  <dl>
+    <div>
+      <dt>Caducidad</dt>
+      <dd>{{ expiryLabel(lot.caducidad) }}</dd>
+    </div>
+    <div>
+      <dt>Dónde está</dt>
+      <dd>{{ lot.ubicacion }}</dd>
+    </div>
+  </dl>
+  @if (error()) {
+    <p class="error-message" role="alert">{{ error() }}</p>
+  }
+  @if (pending()) {
+    <p role="status">Eliminando partida…</p>
+  }
+</mat-dialog-content>
+<mat-dialog-actions>
+  @if (missing()) {
+    <button matButton="filled" (click)="ref.close('missing')">Volver al inventario</button>
+  } @else {
+    <button matButton="outlined" cdkFocusInitial [disabled]="pending()" (click)="ref.close()">
+      Cancelar
+    </button>
+    <button matButton="filled" class="delete-button" [disabled]="pending()" (click)="confirm()">
+      {{ pending() ? 'Eliminando…' : 'Eliminar partida' }}
+    </button>
+  }
+</mat-dialog-actions>

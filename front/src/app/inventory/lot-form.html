@@ -1,0 +1,35 @@
+<form
+  class="lot-form"
+  [formGroup]="form"
+  (ngSubmit)="submit()"
+  [attr.aria-busy]="pending()"
+  novalidate
+>
+  @if (submitted() && form.invalid) {
+    <p class="error-message" role="alert">Revisa los campos indicados.</p>
+  }
+  <mat-form-field appearance="outline">
+    <mat-label>Nombre del producto</mat-label>
+    <input matInput formControlName="nombreProducto" autocomplete="off" required />
+    <mat-error>Escribe el nombre del producto.</mat-error>
+  </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Fecha de caducidad</mat-label>
+    <input matInput type="date" formControlName="caducidad" required />
+    <mat-error>Elige una fecha de caducidad válida.</mat-error>
+  </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Dónde está</mat-label>
+    <input matInput formControlName="ubicacion" autocomplete="off" required />
+    <mat-error>Escribe dónde está el producto.</mat-error>
+  </mat-form-field>
+  <div class="form-actions">
+    <button matButton="filled" type="submit" [disabled]="pending()">
+      <mat-icon aria-hidden="true">save</mat-icon>
+      {{ pending() ? 'Guardando…' : 'Guardar producto' }}
+    </button>
+    <button matButton="outlined" type="button" [disabled]="pending()" (click)="cancel.emit()">
+      Cancelar
+    </button>
+  </div>
+</form>

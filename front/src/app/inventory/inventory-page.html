@@ -1,0 +1,123 @@
+<div class="inventory-toolbar">
+  <div>
+    <h1 id="view-title" tabindex="-1">{{ title() }}</h1>
+    @if (view() === 'list' && !loading() && !error()) {
+      <p class="inventory-count">
+        {{ lots().length }} {{ lots().length === 1 ? 'partida' : 'partidas' }}
+      </p>
+    }
+  </div>
+  @if (view() === 'list') {
+    <button matButton="filled" [disabled]="loading()" (click)="create()">
+      <mat-icon aria-hidden="true">add</mat-icon>Añadir producto
+    </button>
+  } @else {
+    <button matButton="outlined" [disabled]="loading() || saving()" (click)="back()">
+      <mat-icon aria-hidden="true">arrow_back</mat-icon>Volver al inventario
+    </button>
+  }
+</div>
+
+<p role="status" aria-live="polite" aria-atomic="true" [class.notice]="notice()">
+  {{ notice() || (saving() ? 'Guardando producto…' : '') }}
+</p>
+@if (error()) {
+  <p class="error-message" role="alert">{{ error() }}</p>
+}
+
+@if (loading()) {
+  <div class="loading" role="status">
+    <mat-spinner diameter="32" aria-hidden="true" /><span>Cargando inventario…</span>
+  </div>
+} @else if (!missing()) {
+  @if (view() === 'list') {
+    @if (error()) {
+      <button matButton="outlined" (click)="load()">
+        <mat-icon aria-hidden="true">refresh</mat-icon>Reintentar
+      </button>
+    } @else if (lots().length === 0) {
+      <div class="empty-state">
+        <mat-icon aria-hidden="true">inventory_2</mat-icon>
+        <h2>No hay productos registrados</h2>
+      </div>
+    } @else {
+      <ul class="lot-list" aria-label="Partidas del inventario">
+        @for (lot of lots(); track lot.id) {
+          <li>
+            <article
+              class="lot-item"
+              [attr.data-lot-id]="lot.id"
+              [attr.aria-labelledby]="'lot-' + lot.id"
+            >
+              <h2 class="lot-name" [id]="'lot-' + lot.id">{{ lot.nombreProducto }}</h2>
+              <dl>
+                <div>
+                  <dt>Caducidad</dt>
+                  <dd>
+                    <time [attr.datetime]="lot.caducidad">{{ expiryLabel(lot.caducidad) }}</time>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Dónde está</dt>
+                  <dd>{{ lot.ubicacion }}</dd>
+                </div>
+              </dl>
+              <div class="lot-actions">
+                <button
+                  matIconButton
+                  [attr.aria-label]="'Ver detalle de ' + lot.nombreProducto"
+                  matTooltip="Ver detalle"
+                  (click)="show(lot, 'detail')"
+                >
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                <button
+                  matIconButton
+                  [attr.aria-label]="'Editar ' + lot.nombreProducto"
+                  matTooltip="Editar producto"
+                  (click)="show(lot, 'edit')"
+                >
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button
+                  matIconButton
+                  [attr.aria-label]="'Eliminar partida de ' + lot.nombreProducto"
+                  matTooltip="Eliminar partida"
+                  (click)="remove(lot)"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </article>
+          </li>
+        }
+      </ul>
+    }
+  } @else if (view() === 'create' || view() === 'edit') {
+    <app-lot-form [lot]="selected()" [pending]="saving()" (save)="save($event)" (cancel)="back()" />
+  } @else if (selected(); as lot) {
+    <section class="detail" [attr.aria-label]="lot.nombreProducto">
+      <h2 class="lot-name">{{ lot.nombreProducto }}</h2>
+      <dl>
+        <div>
+          <dt>Caducidad</dt>
+          <dd>
+            <time [attr.datetime]="lot.caducidad">{{ expiryLabel(lot.caducidad) }}</time>
+          </dd>
+        </div>
+        <div>
+          <dt>Dónde está</dt>
+          <dd>{{ lot.ubicacion }}</dd>
+        </div>
+      </dl>
+      <div class="lot-actions">
+        <button matButton="filled" (click)="show(lot, 'edit')">
+          <mat-icon aria-hidden="true">edit</mat-icon>Editar producto
+        </button>
+        <button matButton="outlined" (click)="remove(lot)">
+          <mat-icon aria-hidden="true">delete</mat-icon>Eliminar partida
+        </button>
+      </div>
+    </section>
+  }
+}
