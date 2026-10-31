@@ -1,0 +1,12 @@
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+.angular/
+coverage/
+playwright-report/
+test-results/
+.env
+.env.*
+!.env.example
+back/data/

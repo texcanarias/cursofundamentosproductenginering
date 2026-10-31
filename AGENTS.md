@@ -26,6 +26,7 @@ El front de usar:
 - mobile-first
 - semantic web
 - accessibility web
+- PWA
 - Angular 22
 - Angular Material para los componentes
 
@@ -39,12 +40,11 @@ El front de usar:
 
 ## Estructura
 
-| Tecnología | Ruta    | Descripcion      |
-| ---------- | ------- | ---------------- |
-| Docker     | docker/ | Docker           |
-| front      | front/  | Front            |
-| back       | back/   | Back             |
-| spec       | spec/   | Especificaciones |
+| Tecnología | Ruta   | Descripcion      |
+| ---------- | ------ | ---------------- |
+| front      | front/ | Front            |
+| back       | back/  | Back             |
+| spec       | spec/  | Especificaciones |
 
 ## Spec development
 
