@@ -12,9 +12,9 @@ services:
       - key: NODE_ENV
         value: production
       - key: LOTES_CSV_PATH
-        value: back/data/lotes.csv
+        value: data/lotes.csv
       - key: ENTREGAS_CSV_PATH
-        value: back/data/entregas.csv
+        value: data/entregas.csv
     healthCheckPath: /api/health
     autoDeployTrigger: commit
 

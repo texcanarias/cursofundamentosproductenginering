@@ -2,7 +2,7 @@
 
 **Un equipo. Muchas manos.**
 
-![Logotipo aprobado de A la par: dos arcos que se encuentran junto al nombre.](../../front/public/brand/logotipo.svg)
+![Logotipo aprobado de A la par: dos arcos que se encuentran junto al nombre.](../../public/brand/logotipo.svg)
 
 Identidad creada y aprobada por el usuario el 2026-10-31. El nombre, el símbolo y el sistema visual y verbal son la referencia obligatoria para todas las implementaciones y modificaciones del frontend. La aprobación no implica registro de marca ni sustituye las comprobaciones legales o las pruebas con personas usuarias.
 
@@ -40,8 +40,8 @@ Estos ejemplos orientan pantallas futuras. No implican que esos flujos estén im
 
 Dos arcos abiertos, uno verde y otro amarillo, se encuentran en una pieza coral. Sugieren dos personas trabajando juntas y un lugar compartido, sin representar una comunidad o cultura concreta. El símbolo no sustituye etiquetas ni explica estados de inventario.
 
-- Símbolo vectorial: `front/public/brand/simbolo.svg`.
-- Composición horizontal editable: `front/public/brand/logotipo.svg`.
+- Símbolo vectorial: `public/brand/simbolo.svg`.
+- Composición horizontal editable: `public/brand/logotipo.svg`.
 - En la interfaz, el símbolo acompaña al nombre escrito como texto real, con la tipografía local.
 - El SVG horizontal usa Atkinson Hyperlegible cuando está disponible y Verdana como alternativa. Para imprenta, convertir el texto a curvas antes de entregar el arte final.
 - Mantener una zona libre equivalente al ancho de un trazo alrededor del símbolo.
@@ -62,7 +62,7 @@ Dos arcos abiertos, uno verde y otro amarillo, se encuentran en una pieza coral.
 | `--brand-background` | `#F3F6F4` | Fondo de trabajo                                             |
 | `--brand-border`     | `#64746D` | Límites visibles de controles y separaciones                 |
 
-Los tokens viven en `front/src/styles.scss` y el tema Angular Material comparte los colores principales. No introducir colores aislados en cada pantalla.
+Los tokens viven en `src/styles.scss` y el tema Angular Material comparte los colores principales. No introducir colores aislados en cada pantalla.
 
 El amarillo del símbolo es decorativo y no alcanza por sí solo el contraste necesario sobre blanco. Nunca se utiliza así para texto, contornos de controles ni información esencial. El coral decorativo no significa error automáticamente.
 

@@ -37,7 +37,7 @@ La identidad **A la par**, definida en la especificación **004**, fue aprobada 
 - Antes de modificar el frontend, consultar la [guía de identidad](spec/004-identidad-marca/identidad.md) y sus [criterios de aceptación Gherkin](spec/004-identidad-marca/marca.feature). Aplicar el [skill de diseño de marca](.github/skills/diseno-marca-aplicacion/SKILL.md) cuando el trabajo afecte a la identidad visual o verbal.
 - Mantener el nombre **A la par**, el descriptor **Gestión comunitaria**, el lema **Un equipo. Muchas manos.** y los activos de marca aprobados.
 - Conservar un diseño alegre, optimista, colaborativo y adulto, orientado también a personas con poca experiencia digital, mayores y con dificultades visuales. Usar lenguaje sencillo y respetuoso, sin infantilizar.
-- Reutilizar los tokens de [front/src/styles.scss](front/src/styles.scss), el tema Angular Material y los activos de [front/public/brand/](front/public/brand/). No introducir paletas, logotipos o estilos de marca alternativos sin aprobación explícita.
+- Reutilizar los tokens de [src/styles.scss](src/styles.scss), el tema Angular Material y los activos de [public/brand/](public/brand/). No introducir paletas, logotipos o estilos de marca alternativos sin aprobación explícita.
 - Usar Atkinson Hyperlegible servida localmente; texto general de 18 píxeles, nunca inferior a 16 píxeles, y controles interactivos de al menos 48 por 48 píxeles. Permitir ampliación y salto de línea sin ocultar datos ni acciones.
 - Mantener mobile-first, HTML semántico, etiquetas accesibles, navegación por teclado y foco visible. Verificar los contrastes conforme a WCAG 2.2 AA; no comunicar estados únicamente mediante color ni usar amarillo sobre blanco para información esencial.
 - Mantener coherencia entre pantallas, formularios, mensajes, iconos y recursos PWA. La identidad no autoriza a inventar flujos fuera de la especificación funcional correspondiente.
@@ -55,7 +55,7 @@ La identidad **A la par**, definida en la especificación **004**, fue aprobada 
 
 | Tecnología | Ruta   | Descripcion      |
 | ---------- | ------ | ---------------- |
-| front      | front/ | Front            |
+| (root)     | /      | Front (Angular)  |
 | back       | back/  | Back             |
 | spec       | spec/  | Especificaciones |
 
