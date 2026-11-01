@@ -12,20 +12,20 @@ Estado: especificación draft. Redacción inicial para retroalimentación del us
 ## Implementación prevista
 
 1. **Revisar y ajustar scripts de npm** en `front/package.json` y `back/package.json` para modo producción.
-   - `back`: `start` debe ejecutar `node dist/main.js` (o el starter de Render).
-   - `front`: `build` ya existe (`ng build`), pero hay que verificar que la salida sea `dist/front`.
+   - `back`: `start` ahora ejecuta `node dist/src/main.js` (la salida TypeScript está en `dist/src/`, no `dist/`).
+   - `front`: `build` (`ng build`) ya genera `dist/front/`. Se añadió `start:prod` para servir en modo producción.
 2. **Configurar variables de entorno** para Render:
-   - `PORT`: puerto que Render asigna (process.env.PORT o 3000 por defecto).
+   - `PORT`: puerto que Render asigna (process.env.PORT o 3000 por defecto). El backend ya lo respeta.
    - `LOTES_CSV_PATH`: ruta relativa o absolute al CSV de lotes (Render persiste el directorio `back/data/`).
    - `ENTREGAS_CSV_PATH`: ruta relativa o absolute al CSV de entregas.
    - `NODE_ENV`: `production`.
 3. **Crear/verificar archivo de inicio de Render**:
    - Render puede detectar `package.json` scripts `start` y `build` automáticamente.
-   - Opcional: añadir `Dockerfile` si se requiere control fino (por ahora, usar scripts de npm).
+   - Se ha creado `render.yaml` (Render Blueprint) en la raíz del repositorio con la configuración completa de ambos servicios. Render lo detecta automáticamente al conectar el repo.
 4. **Probar build de producción**:
-   - `npm --prefix front run build` → debe generar `dist/front/` con los archivos estáticos.
-   - `npm --prefix back run build` → debe compilar TypeScript a `dist/main.js`.
-   - `npm --prefix back run start` → debe levantar el servidor escuchando el `PORT` indicado.
+   - `npm --prefix front run build` → debe generar `dist/front/` con los archivos estáticos. (comprobado)
+   - `npm --prefix back run build` → debe compilar TypeScript a `dist/src/`. (comprobado)
+   - `npm --prefix back run start` → debe levantar el servidor escuchando el `PORT` indicado. (comprobado con `PORT=10000`)
 5. **Desplegar en Render**:
    - Crear nuevo Service → Node para el backend.
    - Crear nuevo Static Site para el frontend, con el repo GitHub y la rama principal.

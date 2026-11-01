@@ -43,3 +43,44 @@ npm --prefix back run lint
 npm --prefix back run test
 npm --prefix back run build
 ```
+
+## Despliegue en Render
+
+### Archivo de configuración automática: `render.yaml`
+
+El repositorio incluye un archivo `render.yaml` (Render Blueprint) en la raíz que define automáticamente los servicios, variables de entorno y rutas de proxy. Al conectar el repositorio en Render, el dashboard detecta este archivo y configura ambos servicios sin intervención manual.
+
+### Backend (Node service)
+
+1. Crear un nuevo Web Service en Render conectado al repositorio.
+2. Configurar las variables de entorno:
+   - `PORT`: Render lo asigna automáticamente.
+   - `LOTES_CSV_PATH`: `/opt/render/project/src/back/data/lotes.csv` (o ruta absoluta al CSV).
+   - `ENTREGAS_CSV_PATH`: `/opt/render/project/src/back/data/entregas.csv`.
+   - `NODE_ENV`: `production`.
+3. Build command: `npm --prefix back run build`
+4. Start command: `npm --prefix back run start`
+5. El health check responde en `/api/health`.
+
+### Frontend (Static Site)
+
+1. Crear un nuevo Static Site en Render.
+2. Build command: `npm --prefix front run build`
+3. Publish directory: `front/dist/front/browser`
+4. Configurar el proxy hacia el backend en el dashboard de Render (redirigir `/api/*` a la URL del backend).
+5. El frontend incluye un Service Worker (PWA) que se activa automáticamente sobre HTTPS.
+
+### Variables de entorno requeridas
+
+| Variable | Descripción | Ejemplo |
+|----------|-------------|---------|
+| `PORT` | Puerto del servidor (Render lo asigna) | `3000` |
+| `LOTES_CSV_PATH` | Ruta al CSV de inventario | `back/data/lotes.csv` |
+| `ENTREGAS_CSV_PATH` | Ruta al CSV de entregas | `back/data/entregas.csv` |
+| `NODE_ENV` | Entorno de ejecución | `production` |
+
+### Notas
+
+- Los archivos CSV en `back/data/` están en `.gitignore`; se crean automáticamente en el primer arranque si no existen (directorio y archivos vacíos).
+- El backend usa `process.env['PORT'] ?? 3000` para respetar el puerto asignado por Render.
+- El frontend compila a `front/dist/front/browser/` y Render sirve esa carpeta estáticamente.

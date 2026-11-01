@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: a-la-par-backend
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm --prefix back run build
+    startCommand: npm --prefix back run start
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: NODE_ENV
+        value: production
+      - key: LOTES_CSV_PATH
+        value: back/data/lotes.csv
+      - key: ENTREGAS_CSV_PATH
+        value: back/data/entregas.csv
+    healthCheckPath: /api/health
+
+  - type: web
+    name: a-la-par-frontend
+    runtime: static
+    buildCommand: npm --prefix front run build
+    staticPublishPath: front/dist/front/browser
+    envVars:
+      - key: NODE_ENV
+        value: production
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://a-la-par-backend.onrender.com/api/*
