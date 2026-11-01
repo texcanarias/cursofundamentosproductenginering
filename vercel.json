@@ -3,11 +3,6 @@
   "framework": null,
   "buildCommand": "npm --prefix front run build",
   "outputDirectory": "front/dist/front/browser",
-  "functions": {
-    "api/index.ts": {
-      "runtime": "nodejs24.x"
-    }
-  },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index" }
   ],
