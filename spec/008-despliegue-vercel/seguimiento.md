@@ -9,7 +9,9 @@ Estado: especificación draft. Pendiente de aprobación y ejecución.
 - [x] Adaptar el backend para ejecutarse como función serverless de Vercel (`api/index.ts`).
 - [x] Ajustar scripts `start` y `build` en `package.json` de front y back. (ya ajustados en spec 007)
 - [x] Configurar variables de entorno en `vercel.json` (`LOTES_CSV_PATH`, `ENTREGAS_CSV_PATH`, `NODE_ENV`).
-- [x] Ejecutar `npm --prefix front run build` y verificar que `dist/front/browser/` se genera. (comprobado)
+- [x] Corregir error de módulo ES: añadir `"type": "module"` al `package.json` raíz y renombrar `eslint.config.js` a `eslint.config.cjs`.
+- [x] Corregir error TS4111: cambiar `record.id` a `record['id']` en los repositorios CSV.
+- [x] Ejecutar `npm run build` y verificar que `dist/front/browser/` se genera. (comprobado)
 - [x] Ejecutar `npm --prefix back run build` y verificar que compila sin errores. (comprobado)
 - [x] Crear `package.json` en la raíz del proyecto para que Vercel ejecute desde la raíz (evita auto-detección de Angular en `front/`).
 - [x] Eliminar sección `functions` del `vercel.json` (Vercel auto-detecta el runtime).

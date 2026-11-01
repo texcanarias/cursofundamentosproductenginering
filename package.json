@@ -2,6 +2,7 @@
   "name": "a-la-par",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --proxy-config proxy.conf.json",
