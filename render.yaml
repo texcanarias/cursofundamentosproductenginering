@@ -1,36 +1,33 @@
-# Exported from Render on 2026-11-01T13:41:09Z
-version: "1"
-projects:
-- name: My project
-  environments:
-  - name: Production
-    services:
-    - type: web
-      name: cursofundamentosproductenginering
-      runtime: node
-      repo: https://github.com/texcanarias/cursofundamentosproductenginering
-      branch: main
-      plan: free
-      envVars:
-      - key: ENTREGAS_CSV_PATH
-        sync: false
-      - key: LOTES_CSV_PATH
-        sync: false
-      - key: NODE_ENV
-        sync: false
+services:
+  - type: web
+    name: a-la-par-backend
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm --prefix back run build
+    startCommand: npm --prefix back run start
+    envVars:
       - key: PORT
-        sync: false
-      region: oregon
-      buildCommand: npm --prefix back run build
-      startCommand: npm --prefix back run start
-      healthCheckPath: /api/health
-      autoDeployTrigger: commit
-      rootDir: back/
-    - type: web
-      name: cursofundamentosproductenginering-front
-      runtime: static
-      repo: https://github.com/texcanarias/cursofundamentosproductenginering
-      branch: main
-      buildCommand: front/npm --prefix front run build
-      staticPublishPath: front/dist/front/browser
-      autoDeployTrigger: commit
+        value: 3000
+      - key: NODE_ENV
+        value: production
+      - key: LOTES_CSV_PATH
+        value: back/data/lotes.csv
+      - key: ENTREGAS_CSV_PATH
+        value: back/data/entregas.csv
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+
+  - type: web
+    name: a-la-par-frontend
+    runtime: static
+    buildCommand: npm --prefix front run build
+    staticPublishPath: front/dist/front/browser
+    envVars:
+      - key: NODE_ENV
+        value: production
+    routes:
+      - type: rewrite
+        source: /api/*
+        destination: https://a-la-par-backend.onrender.com/api/*
+    autoDeployTrigger: commit
