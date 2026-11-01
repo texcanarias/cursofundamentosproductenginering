@@ -1,0 +1,16 @@
+{
+  "name": "a-la-par",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "npm --prefix front run build",
+    "start": "npm --prefix back run start",
+    "dev:front": "npm --prefix front run start",
+    "dev:back": "npm --prefix back run dev",
+    "test": "npm --prefix front test && npm --prefix back test",
+    "lint": "npm --prefix front run lint && npm --prefix back run lint"
+  },
+  "engines": {
+    "node": ">=24.15.0"
+  }
+}
