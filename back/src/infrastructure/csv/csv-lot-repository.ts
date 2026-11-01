@@ -9,8 +9,8 @@ export class CsvLotRepository implements LotRepository {
 
   async list(): Promise<Lot[]> {
     return (await this.store.readAll()).map((record) => {
-      if (!record.id) throw new Error('Invalid persisted lot identifier');
-      return { id: record.id, ...validateLot(record) };
+      if (!record['id']) throw new Error('Invalid persisted lot identifier');
+      return { id: record['id'], ...validateLot(record) };
     });
   }
 

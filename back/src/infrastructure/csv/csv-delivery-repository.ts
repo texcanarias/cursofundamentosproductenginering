@@ -9,8 +9,8 @@ export class CsvDeliveryRepository implements DeliveryRepository {
 
   async list(): Promise<Delivery[]> {
     return (await this.store.readAll()).map((record) => {
-      if (!record.id) throw new Error('Invalid persisted delivery identifier');
-      return { id: record.id, ...validateDelivery(record) };
+      if (!record['id']) throw new Error('Invalid persisted delivery identifier');
+      return { id: record['id'], ...validateDelivery(record) };
     });
   }
 

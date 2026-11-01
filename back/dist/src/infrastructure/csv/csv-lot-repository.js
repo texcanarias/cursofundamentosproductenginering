@@ -7,9 +7,9 @@ export class CsvLotRepository {
     }
     async list() {
         return (await this.store.readAll()).map((record) => {
-            if (!record.id)
+            if (!record['id'])
                 throw new Error('Invalid persisted lot identifier');
-            return { id: record.id, ...validateLot(record) };
+            return { id: record['id'], ...validateLot(record) };
         });
     }
     insert(lot) {
