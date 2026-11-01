@@ -22,6 +22,7 @@ let frontendProcess;
 let backendProcess;
 let directory;
 let csvPath;
+let deliveriesCsvPath;
 let browser;
 let context;
 let page;
@@ -45,8 +46,12 @@ BeforeAll(async () => {
   browser = await chromium.launch({ headless: true });
 });
 
-Before(async function () {
+Before(async function (scenario) {
+  this.section = String(scenario?.gherkinDocument?.uri ?? '').includes('006-registro-entregas')
+    ? 'deliveries'
+    : 'inventory';
   await writeFile(csvPath, '', 'utf8');
+  await writeFile(deliveriesCsvPath, '', 'utf8');
   context = await browser.newContext();
   page = await context.newPage();
   this.page = page;
@@ -54,7 +59,7 @@ Before(async function () {
   this.backendUrl = backendUrl;
   this.requests = [];
   page.on('request', (request) => {
-    if (request.url().includes('/api/lotes')) {
+    if (request.url().includes('/api/lotes') || request.url().includes('/api/entregas')) {
       this.requests.push({
         method: request.method(),
         url: request.url(),
@@ -103,13 +108,19 @@ async function waitForService(url, process) {
 async function startBackend() {
   directory = await mkdtemp(join(tmpdir(), 'a-la-par-e2e-'));
   csvPath = join(directory, 'lotes.csv');
+  deliveriesCsvPath = join(directory, 'entregas.csv');
   backendProcess = spawn(
     process.execPath,
     ['--import', '../back/node_modules/tsx/dist/loader.mjs', '../back/src/main.ts'],
     {
       cwd: process.cwd(),
       stdio: 'ignore',
-      env: { ...process.env, PORT: '4302', LOTES_CSV_PATH: csvPath },
+      env: {
+        ...process.env,
+        PORT: '4302',
+        LOTES_CSV_PATH: csvPath,
+        ENTREGAS_CSV_PATH: deliveriesCsvPath,
+      },
     },
   );
   await waitForService(`${backendUrl}/api/health`, backendProcess);

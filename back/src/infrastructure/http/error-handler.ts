@@ -1,4 +1,5 @@
 import type { ErrorRequestHandler } from 'express';
+import { DeliveryNotFoundError, DeliveryValidationError } from '../../domain/delivery.js';
 import { LotNotFoundError, LotValidationError } from '../../domain/lot.js';
 
 export const errorHandler: ErrorRequestHandler = (error: unknown, _request, response, next) => {
@@ -8,10 +9,10 @@ export const errorHandler: ErrorRequestHandler = (error: unknown, _request, resp
 };
 
 function describeError(error: unknown) {
-  if (error instanceof LotValidationError) {
+  if (error instanceof LotValidationError || error instanceof DeliveryValidationError) {
     return { status: 400, codigo: 'VALIDACION', mensaje: error.message, campo: error.campo };
   }
-  if (error instanceof LotNotFoundError) {
+  if (error instanceof LotNotFoundError || error instanceof DeliveryNotFoundError) {
     return { status: 404, codigo: 'NO_ENCONTRADO', mensaje: error.message };
   }
   if (error instanceof SyntaxError && 'body' in error) {

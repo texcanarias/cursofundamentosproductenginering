@@ -1,0 +1,116 @@
+<div class="deliveries-toolbar">
+  <div>
+    <h1 id="view-title" tabindex="-1">{{ title() }}</h1>
+    @if (view() === 'list' && !loading() && !error()) {
+      <p class="deliveries-count">
+        {{ deliveries().length }} {{ deliveries().length === 1 ? 'entrega' : 'entregas' }}
+      </p>
+    }
+  </div>
+  @if (view() === 'list') {
+    <button matButton="filled" [disabled]="loading()" (click)="create()">
+      <mat-icon aria-hidden="true">add</mat-icon>Registrar entrega
+    </button>
+  } @else {
+    <button matButton="outlined" [disabled]="loading() || saving()" (click)="back()">
+      <mat-icon aria-hidden="true">arrow_back</mat-icon>Volver a las entregas
+    </button>
+  }
+</div>
+
+<p role="status" aria-live="polite" aria-atomic="true" [class.notice]="notice()">
+  {{ notice() || (saving() ? 'Guardando entrega…' : '') }}
+</p>
+@if (error()) {
+  <p class="error-message" role="alert">{{ error() }}</p>
+}
+
+@if (loading()) {
+  <div class="loading" role="status">
+    <mat-spinner diameter="32" aria-hidden="true" /><span>Cargando entregas…</span>
+  </div>
+} @else if (!missing()) {
+  @if (view() === 'list') {
+    @if (error()) {
+      <button matButton="outlined" (click)="load()">
+        <mat-icon aria-hidden="true">refresh</mat-icon>Reintentar
+      </button>
+    } @else if (deliveries().length === 0) {
+      <div class="empty-state">
+        <mat-icon aria-hidden="true">volunteer_activism</mat-icon>
+        <h2>No hay entregas registradas</h2>
+      </div>
+    } @else {
+      <ul class="delivery-list" aria-label="Entregas registradas">
+        @for (delivery of deliveries(); track delivery.id) {
+          <li>
+            <article
+              class="delivery-item"
+              [attr.data-delivery-id]="delivery.id"
+              [attr.aria-labelledby]="'delivery-' + delivery.id"
+            >
+              <h2 class="delivery-family" [id]="'delivery-' + delivery.id">
+                {{ delivery.familiaId }}
+              </h2>
+              <dl>
+                <div>
+                  <dt>Fecha de entrega</dt>
+                  <dd>
+                    <time [attr.datetime]="delivery.fecha">{{
+                      deliveryDateLabel(delivery.fecha)
+                    }}</time>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Observación</dt>
+                  <dd>{{ delivery.observacion || 'Sin observación' }}</dd>
+                </div>
+              </dl>
+              <div class="delivery-actions">
+                <button
+                  matIconButton
+                  [attr.aria-label]="detailLabel(delivery)"
+                  matTooltip="Ver detalle"
+                  (click)="show(delivery)"
+                >
+                  <mat-icon>visibility</mat-icon>
+                </button>
+                <button
+                  matIconButton
+                  [attr.aria-label]="deleteLabel(delivery)"
+                  matTooltip="Eliminar entrega"
+                  (click)="remove(delivery)"
+                >
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </div>
+            </article>
+          </li>
+        }
+      </ul>
+    }
+  } @else if (view() === 'create') {
+    <app-delivery-form [pending]="saving()" (save)="save($event)" (cancelRequested)="back()" />
+  } @else if (selected(); as delivery) {
+    <section class="detail" [attr.aria-label]="'Entrega de ' + delivery.familiaId">
+      <h2 class="delivery-family">{{ delivery.familiaId }}</h2>
+      <dl>
+        <div>
+          <dt>Fecha de entrega</dt>
+          <dd>
+            <time [attr.datetime]="delivery.fecha">{{ deliveryDateLabel(delivery.fecha) }}</time>
+          </dd>
+        </div>
+        <div>
+          <dt>Observación</dt>
+          <dd>{{ delivery.observacion || 'Sin observación' }}</dd>
+        </div>
+      </dl>
+      <div class="delivery-actions">
+        <button matButton="outlined" (click)="remove(delivery)">
+          <mat-icon aria-hidden="true">delete</mat-icon>Eliminar entrega
+        </button>
+      </div>
+    </section>
+  }
+}

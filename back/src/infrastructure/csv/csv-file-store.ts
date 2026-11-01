@@ -13,7 +13,11 @@ export class CsvFileStore implements CsvRecordStore {
       const content = await readFile(this.filePath, 'utf8');
       return parse(content, { columns: true, skip_empty_lines: true, bom: true });
     } catch (error) {
-      if (isMissingFile(error)) return [];
+      if (isMissingFile(error)) {
+        await mkdir(dirname(this.filePath), { recursive: true });
+        await writeFile(this.filePath, '', 'utf8');
+        return [];
+      }
       throw error;
     }
   }

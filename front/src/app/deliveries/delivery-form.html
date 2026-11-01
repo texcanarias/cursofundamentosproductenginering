@@ -1,0 +1,41 @@
+<form
+  class="delivery-form"
+  [formGroup]="form"
+  (ngSubmit)="submit()"
+  [attr.aria-busy]="pending()"
+  novalidate
+>
+  @if (submitted() && form.invalid) {
+    <p class="error-message" role="alert">Revisa los campos indicados.</p>
+  }
+  <mat-form-field appearance="outline">
+    <mat-label>Identificador de familia</mat-label>
+    <input matInput formControlName="familiaId" autocomplete="off" required />
+    <mat-hint>Por ejemplo, FAM-001</mat-hint>
+    <mat-error>Escribe el identificador de la familia.</mat-error>
+  </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Fecha de entrega</mat-label>
+    <input matInput type="date" formControlName="fecha" required />
+    <mat-error>Elige una fecha de entrega válida.</mat-error>
+  </mat-form-field>
+  <mat-form-field appearance="outline">
+    <mat-label>Observación (opcional)</mat-label>
+    <textarea matInput formControlName="observacion" rows="3" autocomplete="off"></textarea>
+    <mat-hint>Puedes dejarla en blanco.</mat-hint>
+  </mat-form-field>
+  <div class="form-actions">
+    <button matButton="filled" type="submit" [disabled]="pending()">
+      <mat-icon aria-hidden="true">save</mat-icon>
+      {{ pending() ? 'Guardando…' : 'Guardar entrega' }}
+    </button>
+    <button
+      matButton="outlined"
+      type="button"
+      [disabled]="pending()"
+      (click)="cancelRequested.emit()"
+    >
+      Cancelar
+    </button>
+  </div>
+</form>

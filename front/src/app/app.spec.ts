@@ -1,3 +1,4 @@
+import { provideRouter } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { App } from './app';
 
@@ -5,6 +6,7 @@ describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
+      providers: [provideRouter([])],
     }).compileComponents();
   });
 
@@ -32,5 +34,14 @@ describe('App', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('main#main-content')).toBeTruthy();
     expect(compiled.querySelector('a.skip-link')?.textContent?.trim()).toBe('Saltar al contenido');
+  });
+
+  it('offers accessible navigation to the inventory and deliveries sections', () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const links = [...compiled.querySelectorAll('nav[aria-label="Secciones"] a')];
+    expect(links.map((link) => link.textContent?.trim())).toEqual(['Inventario', 'Entregas']);
+    expect(links.map((link) => link.getAttribute('href'))).toEqual(['/inventario', '/entregas']);
   });
 });
