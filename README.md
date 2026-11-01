@@ -84,3 +84,45 @@ El repositorio incluye un archivo `render.yaml` (Render Blueprint) en la raíz q
 - Los archivos CSV en `back/data/` están en `.gitignore`; se crean automáticamente en el primer arranque si no existen (directorio y archivos vacíos).
 - El backend usa `process.env['PORT'] ?? 3000` para respetar el puerto asignado por Render.
 - El frontend compila a `front/dist/front/browser/` y Render sirve esa carpeta estáticamente.
+
+## Despliegue en Vercel
+
+### Archivo de configuración automática: `vercel.json`
+
+El repositorio incluye un archivo `vercel.json` en la raíz que define automáticamente el build, el output y las rutas de proxy. Al conectar el repositorio en Vercel, la plataforma detecta este archivo y configura el despliegue sin intervención manual.
+
+### Backend (Serverless Function)
+
+- Punto de entrada: `api/index.ts` (exporta la app Express como handler).
+- Variables de entorno (configuradas en `vercel.json`):
+  - `LOTES_CSV_PATH`: `/tmp/lotes.csv`
+  - `ENTREGAS_CSV_PATH`: `/tmp/entregas.csv`
+  - `NODE_ENV`: `production`
+- Vercel asigna automáticamente el puerto; no se necesita `PORT`.
+
+### Frontend (Static Site)
+
+1. Vercel detecta automáticamente el framework Angular.
+2. Build Command: `npm --prefix front run build`
+3. Output Directory: `front/dist/front/browser`
+4. Las rutas `/api/*` se redirigen al backend serverless mediante `rewrites` en `vercel.json`.
+
+### Pasos de despliegue
+
+1. Conectar el repositorio en [Vercel Dashboard](https://vercel.com/dashboard).
+2. Vercel detecta `vercel.json` y configura el despliegue automáticamente.
+3. Verificar que el build del frontend y del backend pasan sin errores.
+4. Acceder a la URL provista por Vercel.
+
+### Limitaciones
+
+- **Persistencia de CSV**: Vercel usa un sistema de archivos de solo lectura excepto `/tmp`. Los archivos CSV se almacenan en `/tmp` y se pierden cuando la función serverless se recicla. Para persistencia real, migrar a una base de datos externa.
+- **Cold starts**: Las funciones serverless tienen un arranque en frío que puede añadir latencia al primer request.
+
+### Variables de entorno requeridas
+
+| Variable | Descripción | Valor en Vercel |
+|----------|-------------|-----------------|
+| `LOTES_CSV_PATH` | Ruta al CSV de inventario | `/tmp/lotes.csv` |
+| `ENTREGAS_CSV_PATH` | Ruta al CSV de entregas | `/tmp/entregas.csv` |
+| `NODE_ENV` | Entorno de ejecución | `production` |
