@@ -11,8 +11,10 @@ Estado: especificación draft. Pendiente de aprobación y ejecución.
 - [x] Configurar variables de entorno en `vercel.json` (`LOTES_CSV_PATH`, `ENTREGAS_CSV_PATH`, `NODE_ENV`).
 - [x] Corregir error de módulo ES: añadir `"type": "module"` al `package.json` raíz y renombrar `eslint.config.js` a `eslint.config.cjs`.
 - [x] Corregir error TS4111: cambiar `record.id` a `record['id']` en los repositorios CSV.
-- [x] Corregir error de módulo ESM: cambiar `api/index.ts` a `api/index.cjs` con `module.exports` y `await import()` dinámico para CommonJS.
-- [x] Actualizar build command para compilar también el backend: `npm run build && npm --prefix back run build`.
+- [x] Corregir error de módulo ESM: cambiar `api/index.ts` a `api/index.cjs` con `module.exports` y `require()` (CommonJS).
+- [x] Crear `tsconfig.vercel.json` para compilar el backend a CommonJS (separado del `tsconfig.json` ESM para dev/test).
+- [x] Crear `back/dist-vercel/package.json` sin `"type": "module"` para que los `.js` compilados se traten como CommonJS.
+- [x] Actualizar build command: `npm run build && npx tsc -p back/tsconfig.vercel.json && echo '{...}' > back/dist-vercel/package.json`.
 - [x] Verificar localmente que la función serverless funciona: health, lotes y entregas devuelven datos correctamente.
 - [x] Ejecutar `npm run build` y verificar que `dist/front/browser/` se genera. (comprobado)
 - [x] Ejecutar `npm --prefix back run build` y verificar que compila sin errores. (comprobado)

@@ -20,9 +20,10 @@ Estado: especificación draft. Redacción inicial para retroalimentación del us
    - `rewrites`: redirigir `/api/*` al backend serverless.
    - `functions`: configurar el backend como función serverless.
 3. **Adaptar el backend para Vercel**:
-   - Crear un handler serverless que exporte `app` (Express) como función.
-   - Vercel espera una función que reciba `(req, res)` y la exporte como default.
-   - El archivo `api/index.ts` o `api/index.js` es el punto de entrada para Vercel.
+   - Crear un handler serverless en `api/index.cjs` que exporte la app Express como función CommonJS.
+   - El handler usa `require()` para cargar el backend compilado a CommonJS (`back/dist-vercel/src/...`).
+   - Se creó `tsconfig.vercel.json` para compilar el backend a CommonJS (separado del `tsconfig.json` ESM para dev/test).
+   - Se creó `back/dist-vercel/package.json` sin `"type": "module"` para que los `.js` compilados se traten como CommonJS.
    - El backend debe funcionar tanto en modo standalone (Express) como en modo serverless (Vercel).
 4. **Configurar variables de entorno** en Vercel:
    - `LOTES_CSV_PATH`: ruta al CSV de lotes.

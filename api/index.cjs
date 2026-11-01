@@ -1,5 +1,6 @@
-module.exports = async (req, res) => {
-  const { createApp } = await import('../back/dist/src/infrastructure/http/create-app.js');
+const { createApp } = require('../back/dist-vercel/src/infrastructure/http/create-app.js');
+
+module.exports = (req, res) => {
   const app = createApp();
   return app(req, res);
 };

@@ -1,7 +1,7 @@
 {
   "version": 2,
   "framework": null,
-  "buildCommand": "npm run build && npm --prefix back run build",
+  "buildCommand": "npm run build && npx tsc -p back/tsconfig.vercel.json && echo '{\"name\":\"back-vercel\",\"version\":\"1.0.0\",\"private\":true}' > back/dist-vercel/package.json",
   "outputDirectory": "dist/front/browser",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index" }

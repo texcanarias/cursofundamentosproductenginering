@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "ignoreDeprecations": "6.0",
+    "outDir": "dist-vercel"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "dist-vercel", "test"]
+}
