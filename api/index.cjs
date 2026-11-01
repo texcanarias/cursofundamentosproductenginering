@@ -1,4 +1,4 @@
-const { createApp } = require('../back/dist-vercel/src/infrastructure/http/create-app.js');
+const { createApp } = require('./_backend/infrastructure/http/create-app.js');
 
 module.exports = (req, res) => {
   const app = createApp();

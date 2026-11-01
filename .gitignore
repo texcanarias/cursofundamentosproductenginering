@@ -43,4 +43,5 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
-back/dist-vercel/
+# back/dist-vercel/ (removed from gitignore to allow Vercel deployment)
+api/_backend/
