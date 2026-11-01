@@ -1,59 +1,119 @@
-# Front
+# Entorno de desarrollo
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.5.
+Frontend Angular 22 y backend Node.js/TypeScript en paquetes independientes. El backend usa Express y persiste registros CSV mediante un adaptador de infraestructura.
 
-## Development server
+## Requisitos
 
-To start a local development server, run:
+Node.js 24.15 o superior. Con nvm, ejecuta `nvm use` desde la raíz para activar la versión de `.nvmrc`.
 
-```bash
-ng serve
-```
-
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Frontend
 
 ```bash
-ng generate component component-name
+npm ci
+npx playwright install chromium
+npm start
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Angular Material está configurado. Las llamadas `/api/*` se reenvían al backend local en el puerto 3000.
+
+## PWA
+
+El build de producción genera el manifiesto y los archivos `ngsw.json`/`ngsw-worker.js`. El service worker no se registra en desarrollo; para instalar la app, sirve el build sobre HTTPS o `localhost`. Los iconos actuales son placeholders de Angular y deben sustituirse por la identidad visual del producto antes de publicar.
+
+## Backend
 
 ```bash
-ng generate --help
+cd back
+npm ci
+npm run dev
 ```
 
-## Building
+La API de salud está disponible en `http://localhost:3000/api/health`. Los datos locales van en `back/data/`, ignorado por Git.
 
-To build the project run:
+## Validaciones
+
+Ejecuta estos comandos desde la raíz, en terminales separadas si ambos servidores están activos:
 
 ```bash
-ng build
+npm run lint
+npm test
+npm run test:gherkin
+npm --prefix back run lint
+npm --prefix back run test
+npm --prefix back run build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Despliegue en Render
 
-## Running unit tests
+### Archivo de configuración automática: `render.yaml`
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+El repositorio incluye un archivo `render.yaml` (Render Blueprint) en la raíz que define automáticamente los servicios, variables de entorno y rutas de proxy. Al conectar el repositorio en Render, el dashboard detecta este archivo y configura ambos servicios sin intervención manual.
 
-```bash
-ng test
-```
+### Backend (Node service)
 
-## Running end-to-end tests
+1. Crear un nuevo Web Service en Render conectado al repositorio.
+2. Configurar las variables de entorno:
+   - `PORT`: Render lo asigna automáticamente.
+   - `LOTES_CSV_PATH`: `/opt/render/project/src/back/data/lotes.csv` (o ruta absoluta al CSV).
+   - `ENTREGAS_CSV_PATH`: `/opt/render/project/src/back/data/entregas.csv`.
+   - `NODE_ENV`: `production`.
+3. Build command: `npm --prefix back run build`
+4. Start command: `npm --prefix back run start`
+5. El health check responde en `/api/health`.
 
-For end-to-end (e2e) testing, run:
+### Frontend (Static Site)
 
-```bash
-ng e2e
-```
+1. Crear un nuevo Static Site en Render.
+2. Build command: `npm run build`
+3. Publish directory: `dist/front/browser`
+4. Configurar el proxy hacia el backend en el dashboard de Render (redirigir `/api/*` a la URL del backend).
+5. El frontend incluye un Service Worker (PWA) que se activa automáticamente sobre HTTPS.
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+### Variables de entorno requeridas
 
-## Additional Resources
+| Variable | Descripción | Ejemplo |
+|----------|-------------|---------|
+| `PORT` | Puerto del servidor (Render lo asigna) | `3000` |
+| `LOTES_CSV_PATH` | Ruta al CSV de inventario | `back/data/lotes.csv` |
+| `ENTREGAS_CSV_PATH` | Ruta al CSV de entregas | `back/data/entregas.csv` |
+| `NODE_ENV` | Entorno de ejecución | `production` |
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+### Notas
+
+- Los archivos CSV en `back/data/` están en `.gitignore`; se crean automáticamente en el primer arranque si no existen (directorio y archivos vacíos).
+- El backend usa `process.env['PORT'] ?? 3000` para respetar el puerto asignado por Render.
+- El frontend compila a `dist/front/browser/` y Render sirve esa carpeta estáticamente.
+
+## Despliegue en Vercel
+
+### Archivo de configuración automática: `vercel.json`
+
+El repositorio incluye un archivo `vercel.json` en la raíz que define automáticamente el build, el output y las rutas de proxy. Al conectar el repositorio en Vercel, la plataforma detecta este archivo y configura el despliegue sin intervención manual.
+
+### Backend (Serverless Function)
+
+- Punto de entrada: `api/index.cjs` (exporta la app Express como handler).
+- Variables de entorno (configuradas en `vercel.json`):
+  - `LOTES_CSV_PATH`: `/tmp/lotes.csv`
+  - `ENTREGAS_CSV_PATH`: `/tmp/entregas.csv`
+  - `NODE_ENV`: `production`
+- Vercel asigna automáticamente el puerto; no se necesita `PORT`.
+
+### Frontend (Static Site)
+
+1. Vercel detecta automáticamente el framework Angular.
+2. Build Command: `npm run build`
+3. Output Directory: `dist/front/browser`
+4. Las rutas `/api/*` se redirigen al backend serverless mediante `rewrites` en `vercel.json`.
+
+### Pasos de despliegue
+
+1. Conectar el repositorio en [Vercel Dashboard](https://vercel.com/dashboard).
+2. Vercel detecta `vercel.json` y configura el despliegue automáticamente.
+3. Verificar que el build del frontend y del backend pasan sin errores.
+4. Acceder a la URL provista por Vercel.
+
+### Limitaciones
+
+- **Persistencia de CSV**: Vercel usa un sistema de archivos de solo lectura excepto `/tmp`. Los archivos CSV se almacenan en `/tmp` y se pierden cuando la función serverless se recicla. Para persistencia real, migrar a una base de datos externa.
+- **Cold starts**: Las funciones serverless tienen un arranque en frío que puede añadir latencia al primer request.
