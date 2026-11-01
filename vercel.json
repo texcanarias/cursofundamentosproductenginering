@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "framework": null,
   "buildCommand": "npm --prefix front run build",
   "outputDirectory": "front/dist/front/browser",
   "functions": {
