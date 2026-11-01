@@ -1,3 +1,5 @@
+import { isCalendarDate } from './calendar-date.js';
+
 export interface LotData {
   nombreProducto: string;
   caducidad: string;
@@ -40,10 +42,4 @@ function requiredText(fields: Record<string, unknown>, campo: keyof LotData): st
   const value = fields[campo];
   if (typeof value !== 'string' || value.trim() === '') throw new LotValidationError(campo);
   return value;
-}
-
-function isCalendarDate(value: string): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || value.startsWith('0000-')) return false;
-  const date = new Date(`${value}T00:00:00.000Z`);
-  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
