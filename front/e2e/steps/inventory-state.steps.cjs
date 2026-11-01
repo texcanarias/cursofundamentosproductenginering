@@ -12,8 +12,11 @@ const {
   writes,
   checkForm,
 } = require('../support/inventory.cjs');
+const deliveries = require('../support/deliveries.cjs');
+const sections = require('../support/sections.cjs');
 
 When('una consulta o una operación CRUD está pendiente', async function () {
+  if (sections.isDeliveries(this)) return pendingDelivery(this);
   await startCreate(this);
   const gate = new Promise((resolve) => {
     this.release = resolve;
@@ -27,7 +30,8 @@ When('una consulta o una operación CRUD está pendiente', async function () {
 });
 
 Then('se indica de forma accesible que la operación está en curso', async function () {
-  await expect(this.page.getByRole('status')).toContainText('Guardando producto…');
+  const text = sections.isDeliveries(this) ? 'Guardando entrega…' : 'Guardando producto…';
+  await expect(this.page.getByRole('status')).toContainText(text);
 });
 
 Then(
@@ -36,25 +40,25 @@ Then(
     await this.page
       .getByRole('button', { name: 'Guardando…', exact: true })
       .evaluate((button) => button.click());
-    assert.equal(writes(this).length, 1);
+    assert.equal(sections.writes(this).length, 1);
   },
 );
 
 Then('no se muestra éxito antes de la respuesta del backend', async function () {
-  await expect(this.page.getByRole('status')).not.toContainText('Producto guardado.');
+  const success = sections.isDeliveries(this) ? 'Entrega registrada.' : 'Producto guardado.';
+  const heading = sections.isDeliveries(this) ? 'Entregas' : 'Inventario';
+  await expect(this.page.getByRole('status')).not.toContainText(success);
   this.release();
-  await expect(this.page.getByRole('heading', { name: 'Inventario', exact: true })).toBeVisible();
-  assert.equal((await api(this)).length, 1);
+  await expect(this.page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
+  assert.equal((await sections.api(this)).length, 1);
 });
 
 Given('que falla la consulta al backend', async function () {
+  const path = `**${sections.apiPath(this)}`;
+  const message = 'No se pudo consultar.';
   await this.page.route(
-    '**/api/lotes',
-    (route) =>
-      route.fulfill({
-        status: 500,
-        json: { error: { mensaje: 'No se pudo consultar el inventario.' } },
-      }),
+    path,
+    (route) => route.fulfill({ status: 500, json: { error: { mensaje: message } } }),
     { times: 1 },
   );
 });
@@ -82,6 +86,11 @@ Given('que el backend rechaza un alta, una edición o una eliminación', async f
 
 When('recibo la respuesta de error', async function () {
   this.preserved = 0;
+  if (sections.isDeliveries(this)) {
+    await deliveries.rejectedCreate(this);
+    await deliveries.rejectedDelete(this);
+    return;
+  }
   await rejectedForm(this, 'create');
   await rejectedForm(this, 'edit');
   await rejectedDelete(this);
@@ -92,8 +101,9 @@ Then('veo un mensaje accesible con el motivo disponible', async function () {
 });
 
 Then('no se presenta la operación como completada', async function () {
-  assert.deepEqual(await api(this), this.lots);
-  await expect(this.page.getByText('Producto guardado.', { exact: true })).toHaveCount(0);
+  assert.deepEqual(await sections.api(this), sections.records(this));
+  const success = sections.isDeliveries(this) ? 'Entrega registrada.' : 'Producto guardado.';
+  await expect(this.page.getByText(success, { exact: true })).toHaveCount(0);
 });
 
 Then('se conservan los valores del formulario si estaba creando o editando', function () {
@@ -101,10 +111,11 @@ Then('se conservan los valores del formulario si estaba creando o editando', fun
 });
 
 Then('puedo corregir los datos o reintentar cuando proceda', async function () {
-  await this.page.unroute('**/api/lotes**');
-  await this.page.getByRole('button', { name: 'Eliminar partida', exact: true }).click();
+  await this.page.unroute(`**${sections.apiPath(this)}**`);
+  const name = sections.isDeliveries(this) ? 'Eliminar entrega' : 'Eliminar partida';
+  await this.page.getByRole('button', { name, exact: true }).click();
   await expect(this.page.getByRole('dialog')).toBeHidden();
-  assert.deepEqual(await api(this), []);
+  assert.deepEqual(await sections.api(this), []);
 });
 
 Given('que una partida visible se ha eliminado en el backend', async function () {
@@ -129,9 +140,9 @@ Then('puedo volver al inventario actualizado', async function () {
 });
 
 Given('que no hay conexión con el backend', async function () {
-  await seed(this, [sample]);
+  await sections.seed(this, [sections.sample(this)]);
   this.failure = 'No hay conexión';
-  await this.page.route('**/api/lotes**', (route) =>
+  await this.page.route(`**${sections.apiPath(this)}**`, (route) =>
     route.request().method() === 'GET' ? route.continue() : route.abort('internetdisconnected'),
   );
 });
@@ -146,13 +157,27 @@ Then('se informa de que no se ha podido completar la operación', async function
 });
 
 Then('no se confirma ni se encola una escritura para sincronizarla después', async function () {
-  assert.deepEqual(await api(this), this.lots);
-  assert.equal(writes(this).length, 2);
-  await this.page.unroute('**/api/lotes**');
-  await open(this);
-  assert.deepEqual(await api(this), this.lots);
-  assert.equal(writes(this).length, 2);
+  const records = sections.records(this);
+  assert.deepEqual(await sections.api(this), records);
+  assert.equal(sections.writes(this).length, 2);
+  await this.page.unroute(`**${sections.apiPath(this)}**`);
+  await sections.open(this);
+  assert.deepEqual(await sections.api(this), records);
+  assert.equal(sections.writes(this).length, 2);
 });
+
+async function pendingDelivery(world) {
+  await deliveries.startCreate(world);
+  const gate = new Promise((resolve) => {
+    world.release = resolve;
+  });
+  await world.page.route('**/api/entregas', async (route) => {
+    await gate;
+    await route.continue();
+  });
+  await world.page.getByRole('button', { name: 'Guardar entrega', exact: true }).click();
+  await expect(world.page.getByRole('button', { name: 'Guardando…', exact: true })).toBeDisabled();
+}
 
 async function rejectedForm(world, mode) {
   const data = { ...sample, nombreProducto: 'Arroz integral' };

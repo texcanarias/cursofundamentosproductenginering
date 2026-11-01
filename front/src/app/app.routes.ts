@@ -8,5 +8,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./inventory/inventory-page').then((module) => module.InventoryPage),
   },
+  {
+    path: 'entregas',
+    title: 'Entregas · A la par',
+    loadComponent: () =>
+      import('./deliveries/deliveries-page').then((module) => module.DeliveriesPage),
+  },
   { path: '**', redirectTo: 'inventario' },
 ];

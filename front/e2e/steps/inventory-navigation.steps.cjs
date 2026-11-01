@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const { Given, When, Then } = require('@cucumber/cucumber');
 const { expect } = require('@playwright/test');
 const { sample, api, seed, open, article } = require('../support/inventory.cjs');
+const sections = require('../support/sections.cjs');
 
 Given('que utilizo el frontend Angular con Angular Material', function () {
   assert.ok(this.frontendUrl);
@@ -30,7 +31,7 @@ Given(
   },
 );
 Given('que el backend devuelve una lista vacía', async function () {
-  await seed(this, []);
+  await sections.seed(this, []);
 });
 Given('que existen dos partidas del mismo producto', async function () {
   await seed(this);
@@ -97,7 +98,8 @@ Then('puedo iniciar el alta de una partida', async function () {
 });
 
 When('abro su detalle', async function () {
-  await article(this)
+  await sections
+    .article(this)
     .getByRole('button', { name: /Ver detalle/ })
     .click();
 });

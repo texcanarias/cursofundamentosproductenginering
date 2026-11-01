@@ -1,0 +1,34 @@
+<h2 mat-dialog-title>¿Eliminar esta entrega?</h2>
+<mat-dialog-content class="delete-content" [attr.aria-busy]="pending()">
+  <p class="delivery-family">{{ delivery.familiaId }}</p>
+  <dl>
+    <div>
+      <dt>Fecha de entrega</dt>
+      <dd>
+        <time [attr.datetime]="delivery.fecha">{{ deliveryDateLabel(delivery.fecha) }}</time>
+      </dd>
+    </div>
+    <div>
+      <dt>Observación</dt>
+      <dd>{{ delivery.observacion || 'Sin observación' }}</dd>
+    </div>
+  </dl>
+  @if (error()) {
+    <p class="error-message" role="alert">{{ error() }}</p>
+  }
+  @if (pending()) {
+    <p role="status">Eliminando entrega…</p>
+  }
+</mat-dialog-content>
+<mat-dialog-actions>
+  @if (missing()) {
+    <button matButton="filled" (click)="ref.close('missing')">Volver a las entregas</button>
+  } @else {
+    <button matButton="outlined" cdkFocusInitial [disabled]="pending()" (click)="ref.close()">
+      Cancelar
+    </button>
+    <button matButton="filled" class="delete-button" [disabled]="pending()" (click)="confirm()">
+      {{ pending() ? 'Eliminando…' : 'Eliminar entrega' }}
+    </button>
+  }
+</mat-dialog-actions>

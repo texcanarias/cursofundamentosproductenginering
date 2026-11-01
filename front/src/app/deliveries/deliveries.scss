@@ -1,0 +1,144 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  line-height: 1.25;
+}
+
+.deliveries-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.deliveries-count {
+  margin: 0.4rem 0 0;
+  color: var(--brand-muted);
+}
+
+.delivery-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.delivery-item {
+  height: 100%;
+  padding: 1.25rem;
+  border: 1px solid var(--brand-border);
+  border-radius: 8px;
+  background: var(--brand-surface);
+}
+
+.delivery-family {
+  margin: 0 0 1rem;
+  color: var(--brand-ink);
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+dl {
+  margin: 0;
+}
+
+dl > div + div {
+  margin-top: 1rem;
+}
+
+dt {
+  color: var(--brand-muted);
+  font-weight: 700;
+}
+
+dd {
+  margin: 0.2rem 0 0;
+  white-space: pre-wrap;
+}
+
+h1,
+.delivery-family,
+dd,
+.error-message {
+  overflow-wrap: anywhere;
+}
+
+.delivery-actions,
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.delivery-form {
+  display: grid;
+  gap: 1rem;
+  width: min(100%, 36rem);
+}
+
+.delivery-form mat-form-field {
+  min-width: 0;
+  width: 100%;
+}
+
+.error-message,
+.notice {
+  padding: 1rem;
+  border-left: 4px solid var(--brand-coral);
+  background: var(--brand-surface);
+}
+
+.notice {
+  border-color: var(--brand-green);
+}
+
+.empty-state {
+  padding-block: 2rem;
+  border-top: 1px solid var(--brand-border);
+}
+
+.empty-state mat-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--brand-green);
+  font-size: 48px;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-block: 2rem;
+}
+
+.detail {
+  max-width: 40rem;
+  padding-block: 1rem;
+  border-top: 1px solid var(--brand-border);
+}
+
+.delete-content {
+  color: var(--brand-ink);
+}
+
+.delete-button {
+  background: var(--brand-coral) !important;
+  color: var(--brand-surface) !important;
+}
+
+@media (min-width: 48rem) {
+  .delivery-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -49,7 +49,10 @@ async function saved(world) {
 }
 
 function writes(world) {
-  return world.requests.filter((request) => ['POST', 'PUT', 'DELETE'].includes(request.method));
+  return world.requests.filter(
+    (request) =>
+      ['POST', 'PUT', 'DELETE'].includes(request.method) && request.url.includes('/api/lotes'),
+  );
 }
 
 async function checkForm(world, data = sample) {

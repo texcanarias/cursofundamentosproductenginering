@@ -54,6 +54,34 @@
   color: var(--brand-muted);
 }
 
+.section-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.5rem;
+  padding: 0.25rem 1.25rem;
+  background: var(--brand-surface);
+  border-bottom: 1px solid var(--brand-border);
+}
+
+.section-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  border-bottom: 4px solid transparent;
+  color: var(--brand-green);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.section-nav a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+
+.section-nav a.active {
+  border-bottom-color: var(--brand-green);
+}
+
 main {
   width: min(100%, 72rem);
   min-height: 60vh;
@@ -64,6 +92,10 @@ main {
 @media (min-width: 48rem) {
   .app-header {
     padding: 1.5rem 2.5rem;
+  }
+
+  .section-nav {
+    padding-inline: 2.5rem;
   }
 
   main {

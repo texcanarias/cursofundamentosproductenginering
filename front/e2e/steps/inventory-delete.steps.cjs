@@ -2,10 +2,12 @@ const assert = require('node:assert/strict');
 const { Given, When, Then } = require('@cucumber/cucumber');
 const { expect } = require('@playwright/test');
 const { sample, api, seed, open, article, writes } = require('../support/inventory.cjs');
+const sections = require('../support/sections.cjs');
 
 When('solicito eliminar una de ellas', async function () {
-  await open(this);
-  await article(this)
+  await sections.open(this);
+  await sections
+    .article(this)
     .getByRole('button', { name: /Eliminar/ })
     .click();
 });
@@ -20,16 +22,14 @@ Then('aparece una confirmación que identifica su nombre, caducidad y ubicación
 });
 
 When('confirmo la eliminación', async function () {
-  await this.page
-    .getByRole('dialog')
-    .getByRole('button', { name: 'Eliminar partida', exact: true })
-    .click();
+  const name = sections.isDeliveries(this) ? 'Eliminar entrega' : 'Eliminar partida';
+  await this.page.getByRole('dialog').getByRole('button', { name, exact: true }).click();
   await expect(this.page.getByRole('dialog')).toBeHidden();
-  await expect(article(this)).toBeHidden();
+  await expect(sections.article(this)).toBeHidden();
 });
 
 Then('se envía DELETE al identificador de esa partida', function () {
-  const request = writes(this).find((request) => request.method === 'DELETE');
+  const request = writes(this).find((entry) => entry.method === 'DELETE');
   assert.ok(request.url.endsWith(`/api/lotes/${this.lots[0].id}`));
 });
 
@@ -58,7 +58,7 @@ When('cancelo la eliminación', async function () {
 });
 
 Then('no se envía ninguna petición DELETE', function () {
-  assert.equal(writes(this).filter((request) => request.method === 'DELETE').length, 0);
+  assert.equal(sections.writes(this).filter((request) => request.method === 'DELETE').length, 0);
 });
 
 Then('la partida permanece visible', async function () {
