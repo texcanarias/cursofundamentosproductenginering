@@ -15,7 +15,7 @@ Estado: especificación draft. Pendiente de aprobación y ejecución.
 - [ ] Desplegar y verificar que ambas aplicaciones funcionan en las URLs provistas.
 - [ ] Probar los CRUD completos (inventario + entregas) en el entorno de producción.
 - [ ] Registrar las URLs de Vercel en la documentación del proyecto.
-- [ ] Actualizar `README` con la nueva sección "Despliegue en Vercel".
+- [x] Actualizar `README` con la nueva sección "Despliegue en Vercel".
 
 ## Verificación realizada
 
