@@ -31,9 +31,10 @@ La aplicación queda disponible en `http://localhost:4200`. Las rutas principale
 ### Visualización en dispositivos
 
 La interfaz prioriza móviles y tablets: las tarjetas se apilan en una columna, pasan a dos en
-tablet y a tres en escritorio, sin desplazamiento horizontal. La caducidad se destaca con su estado
-textual FEFO y la fecha de entrega aparece como dato principal. Las acciones mantienen zonas táctiles
-de al menos 48 × 48 px. La especificación está en
+tablet y a tres en escritorio, sin desplazamiento horizontal. Los campos de datos dentro de cada tarjeta
+se muestran siempre en una sola columna. La caducidad se destaca con su estado textual FEFO y la fecha
+de entrega aparece como dato principal. Las acciones mantienen zonas táctiles de al menos 48 × 48 px.
+La especificación está en
 [`spec/010-mejora-visualizacion-dispositivos/`](spec/010-mejora-visualizacion-dispositivos/).
 
 ### Persistencia en el navegador

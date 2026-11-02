@@ -34,8 +34,8 @@ la pantalla. Las causas observadas son:
 - Definir una jerarquía visual explícita por tipo de dato:
   - Inventario: nombre del producto, caducidad con su estado textual, ubicación y acciones.
   - Entregas: identificador de familia, fecha de entrega, observación y acciones.
-- Mostrar los datos como pares etiqueta-valor legibles en una o dos columnas según el espacio,
-  sin tablas que obliguen a desplazamiento horizontal.
+- Mostrar los datos como pares etiqueta-valor legibles, siempre en una sola columna dentro de cada
+  tarjeta, sin tablas que obliguen a desplazamiento horizontal.
 - Mantener siempre visibles y accesibles las acciones principales de cada tarjeta.
 - Adaptar la cabecera, la navegación y los formularios a pantallas pequeñas.
 - Permitir lectura cómoda con texto ampliado al 200 % y reflujo sin pérdida de contenido al 400 %.
@@ -60,7 +60,7 @@ Se toman como referencia los siguientes anchos, sin tratarlos como dispositivos 
 | Rango                         | Ancho útil    | Comportamiento esperado                                               |
 | ----------------------------- | ------------- | --------------------------------------------------------------------- |
 | Móvil pequeño                 | 320–479 px    | Una columna, acciones a ancho completo, sin desplazamiento horizontal |
-| Móvil grande                  | 480–767 px    | Una columna con pares etiqueta-valor en una o dos columnas si caben   |
+| Móvil grande                  | 480–767 px    | Una columna con los datos apilados dentro de cada tarjeta             |
 | Tablet vertical               | 768–1023 px   | Dos columnas de tarjetas y formularios de anchura legible             |
 | Tablet horizontal u ordenador | 1024 px o más | Hasta tres columnas de tarjetas y contenido centrado con ancho máximo |
 

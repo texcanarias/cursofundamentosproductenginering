@@ -35,7 +35,8 @@ Estado: implementada y verificada el 2026-11-02. Solicitada por el usuario el 20
 - Reorganizar cada tarjeta en tres zonas: título, pares etiqueta-valor y acciones.
 - Destacar el dato principal de cada tarjeta (caducidad en inventario, fecha en entregas) con un
   bloque propio, sin depender solo del color.
-- Mostrar los pares etiqueta-valor en una columna en móvil y en dos cuando haya espacio.
+- Mostrar los pares etiqueta-valor siempre en una sola columna dentro de cada tarjeta, en todos
+  los tamaños de pantalla.
 - Evitar que las acciones se separen del contenido: barra de acciones a ancho completo en móvil
   y alineada a la derecha en pantallas mayores.
 - Mantener las acciones visibles, con icono y texto alternativo accesible, y agruparlas en un

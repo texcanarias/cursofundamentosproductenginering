@@ -15,7 +15,9 @@ usuario el 2026-11-02 a partir de la detección del ICP tras la puesta en produc
 - [x] Añadir estilos compartidos de tarjeta, campos, acciones y formularios.
 - [x] Reorganizar las tarjetas de inventario con título, caducidad destacada, ubicación y acciones.
 - [x] Reorganizar las tarjetas de entregas con título, fecha destacada, observación y acciones.
-- [x] Adaptar la rejilla a una columna en móvil, dos en tablet y tres en escritorio.
+- [x] Adaptar la rejilla de tarjetas a una columna en móvil, dos en tablet y tres en escritorio.
+- [x] Ajustar la petición posterior del usuario: los datos de cada tarjeta se muestran siempre en
+      una sola columna interna, en cualquier tamaño de pantalla.
 - [x] Compactar la cabecera y la navegación en móvil sin ocultar la marca.
 - [x] Ajustar formularios, mensajes de estado y diálogos a pantallas estrechas.
 - [x] Respetar las áreas seguras y el reflujo al ampliar el texto.
@@ -46,6 +48,8 @@ usuario el 2026-11-02 a partir de la detección del ICP tras la puesta en produc
 - La información esencial de cada tarjeta se ve sin abrir el detalle.
 - Las acciones se apilan a ancho completo en móvil y se agrupan con `role="group"`.
 - Las tarjetas usan una rejilla de 1 columna por defecto, 2 desde 48 rem y 3 desde 64 rem.
+- Los pares etiqueta-valor dentro de cada tarjeta permanecen siempre en una sola columna, también en
+  tablet y escritorio, para mantener una lectura lineal y evitar comparaciones cruzadas.
 - Se reutilizan los tokens de `src/styles.scss` y no se introducen colores ni tipografías nuevas.
 - El estado de caducidad se muestra siempre con texto y se acompaña de color, nunca al revés.
 

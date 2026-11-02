@@ -95,10 +95,33 @@ async function expectNoOverflow(world) {
   return layout;
 }
 
+async function cardFields(world) {
+  return world.page.evaluate(() =>
+    [...document.querySelectorAll('.data-item')].map((article) =>
+      [...article.querySelectorAll('.data-field')].map((field) => {
+        const box = field.getBoundingClientRect();
+        return { top: box.top, bottom: box.bottom };
+      }),
+    ),
+  );
+}
+
+async function expectFieldsInOneColumn(world) {
+  for (const fields of await cardFields(world)) {
+    for (let index = 1; index < fields.length; index += 1) {
+      assert.ok(
+        fields[index].top >= fields[index - 1].bottom - 1,
+        'Los datos de una tarjeta no se muestran en una sola columna',
+      );
+    }
+  }
+}
+
 async function expectCardsComplete(world) {
   const records = sections.records(world);
   const articles = world.page.locator('.data-item');
   await expect(articles).toHaveCount(records.length);
+  await expectFieldsInOneColumn(world);
   for (const [index, record] of records.entries()) {
     const article = sections.article(world, index);
     if (sections.isDeliveries(world)) {
