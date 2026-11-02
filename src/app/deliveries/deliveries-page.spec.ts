@@ -64,6 +64,19 @@ describe('Deliveries states', () => {
     expect(fixture.componentInstance.view()).toBe('detail');
   });
 
+  it('presents the date first and groups the card actions', () => {
+    save([delivery]);
+    const fixture = createPage();
+    fixture.detectChanges();
+    const article = fixture.nativeElement.querySelector('article');
+    expect(article.querySelector('.data-field--primary')?.textContent).toContain(
+      'Fecha de entrega',
+    );
+    expect(article.querySelector('[role="group"]')?.getAttribute('aria-label')).toBe(
+      'Acciones de la entrega de FAM-001',
+    );
+  });
+
   it('reports a missing delivery and refreshes the list when returning', () => {
     save([delivery]);
     const fixture = createPage();

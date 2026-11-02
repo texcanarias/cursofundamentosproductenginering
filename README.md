@@ -23,17 +23,25 @@ npm start
 
 La aplicación queda disponible en `http://localhost:4200`. Las rutas principales son:
 
-| Ruta         | Contenido                    |
-| ------------ | ---------------------------- |
-| `/inventario` | Partidas de productos       |
+| Ruta          | Contenido                    |
+| ------------- | ---------------------------- |
+| `/inventario` | Partidas de productos        |
 | `/entregas`   | Entregas de ayuda a familias |
+
+### Visualización en dispositivos
+
+La interfaz prioriza móviles y tablets: las tarjetas se apilan en una columna, pasan a dos en
+tablet y a tres en escritorio, sin desplazamiento horizontal. La caducidad se destaca con su estado
+textual FEFO y la fecha de entrega aparece como dato principal. Las acciones mantienen zonas táctiles
+de al menos 48 × 48 px. La especificación está en
+[`spec/010-mejora-visualizacion-dispositivos/`](spec/010-mejora-visualizacion-dispositivos/).
 
 ### Persistencia en el navegador
 
-| Clave               | Contenido                                     |
-| ------------------- | --------------------------------------------- |
-| `a-la-par:lotes`     | Partidas con nombre, caducidad, ubicación e id |
-| `a-la-par:entregas`  | Entregas con familia, fecha, observación e id  |
+| Clave               | Contenido                                      |
+| ------------------- | ---------------------------------------------- |
+| `a-la-par:lotes`    | Partidas con nombre, caducidad, ubicación e id |
+| `a-la-par:entregas` | Entregas con familia, fecha, observación e id  |
 
 - Una clave ausente equivale a una lista vacía.
 - Los datos se conservan al recargar la página y se separan por tipo de registro.
@@ -109,9 +117,9 @@ no la utiliza. Si solo se publica la aplicación, el despliegue estático es suf
 
 ## Estructura
 
-| Tecnología | Ruta   | Descripción          |
-| ---------- | ------ | -------------------- |
-| (raíz)     | `/`    | Frontend Angular     |
-| Backend    | `back/` | Backend Node.js/CSV  |
-| Specs      | `spec/` | Especificaciones     |
+| Tecnología | Ruta    | Descripción             |
+| ---------- | ------- | ----------------------- |
+| (raíz)     | `/`     | Frontend Angular        |
+| Backend    | `back/` | Backend Node.js/CSV     |
+| Specs      | `spec/` | Especificaciones        |
 | E2E        | `e2e/`  | Pasos y soporte Gherkin |

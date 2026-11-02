@@ -18,7 +18,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { finalize, type Observable } from 'rxjs';
 import { isNotFound } from '../shared/errors';
 import { DeleteLotDialog } from './delete-lot-dialog';
-import { expiryLabel, lotError, type Lot, type LotData } from './lot';
+import { expiryLabel, expiryStatus, lotError, type Lot, type LotData } from './lot';
 import { LotApi } from './lot-api';
 import { LotForm } from './lot-form';
 
@@ -52,6 +52,7 @@ export class InventoryPage {
   readonly missing = signal(false);
   readonly notice = signal('');
   readonly expiryLabel = expiryLabel;
+  readonly expiryStatus = expiryStatus;
   readonly title = computed(
     () =>
       ({

@@ -41,28 +41,36 @@
         <h2>No hay productos registrados</h2>
       </div>
     } @else {
-      <ul class="lot-list" aria-label="Partidas del inventario">
+      <ul class="data-list" aria-label="Partidas del inventario">
         @for (lot of lots(); track lot.id) {
+          @let expiry = expiryStatus(lot.caducidad);
           <li>
             <article
-              class="lot-item"
+              class="data-item"
               [attr.data-lot-id]="lot.id"
               [attr.aria-labelledby]="'lot-' + lot.id"
             >
-              <h2 class="lot-name" [id]="'lot-' + lot.id">{{ lot.nombreProducto }}</h2>
-              <dl>
-                <div>
+              <h2 class="data-title" [id]="'lot-' + lot.id">{{ lot.nombreProducto }}</h2>
+              <dl class="data-fields">
+                <div class="data-field data-field--primary" [attr.data-tone]="expiry.tone">
                   <dt>Caducidad</dt>
                   <dd>
                     <time [attr.datetime]="lot.caducidad">{{ expiryLabel(lot.caducidad) }}</time>
+                    <span class="expiry-state" [attr.data-tone]="expiry.tone">{{
+                      expiry.label
+                    }}</span>
                   </dd>
                 </div>
-                <div>
+                <div class="data-field">
                   <dt>Dónde está</dt>
                   <dd>{{ lot.ubicacion }}</dd>
                 </div>
               </dl>
-              <div class="lot-actions">
+              <div
+                class="data-actions"
+                role="group"
+                [attr.aria-label]="'Acciones de ' + lot.nombreProducto"
+              >
                 <button
                   matIconButton
                   [attr.aria-label]="'Ver detalle de ' + lot.nombreProducto"
@@ -101,21 +109,27 @@
       (cancelRequested)="back()"
     />
   } @else if (selected(); as lot) {
+    @let expiry = expiryStatus(lot.caducidad);
     <section class="detail" [attr.aria-label]="lot.nombreProducto">
-      <h2 class="lot-name">{{ lot.nombreProducto }}</h2>
-      <dl>
-        <div>
+      <h2 class="data-title">{{ lot.nombreProducto }}</h2>
+      <dl class="data-fields">
+        <div class="data-field data-field--primary" [attr.data-tone]="expiry.tone">
           <dt>Caducidad</dt>
           <dd>
             <time [attr.datetime]="lot.caducidad">{{ expiryLabel(lot.caducidad) }}</time>
+            <span class="expiry-state" [attr.data-tone]="expiry.tone">{{ expiry.label }}</span>
           </dd>
         </div>
-        <div>
+        <div class="data-field">
           <dt>Dónde está</dt>
           <dd>{{ lot.ubicacion }}</dd>
         </div>
       </dl>
-      <div class="lot-actions">
+      <div
+        class="data-actions"
+        role="group"
+        [attr.aria-label]="'Acciones de ' + lot.nombreProducto"
+      >
         <button matButton="filled" (click)="show(lot, 'edit')">
           <mat-icon aria-hidden="true">edit</mat-icon>Editar producto
         </button>

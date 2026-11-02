@@ -41,19 +41,19 @@
         <h2>No hay entregas registradas</h2>
       </div>
     } @else {
-      <ul class="delivery-list" aria-label="Entregas registradas">
+      <ul class="data-list" aria-label="Entregas registradas">
         @for (delivery of deliveries(); track delivery.id) {
           <li>
             <article
-              class="delivery-item"
+              class="data-item"
               [attr.data-delivery-id]="delivery.id"
               [attr.aria-labelledby]="'delivery-' + delivery.id"
             >
-              <h2 class="delivery-family" [id]="'delivery-' + delivery.id">
+              <h2 class="data-title" [id]="'delivery-' + delivery.id">
                 {{ delivery.familiaId }}
               </h2>
-              <dl>
-                <div>
+              <dl class="data-fields">
+                <div class="data-field data-field--primary">
                   <dt>Fecha de entrega</dt>
                   <dd>
                     <time [attr.datetime]="delivery.fecha">{{
@@ -61,12 +61,16 @@
                     }}</time>
                   </dd>
                 </div>
-                <div>
+                <div class="data-field">
                   <dt>Observación</dt>
                   <dd>{{ delivery.observacion || 'Sin observación' }}</dd>
                 </div>
               </dl>
-              <div class="delivery-actions">
+              <div
+                class="data-actions"
+                role="group"
+                [attr.aria-label]="'Acciones de la entrega de ' + delivery.familiaId"
+              >
                 <button
                   matIconButton
                   [attr.aria-label]="detailLabel(delivery)"
@@ -93,20 +97,24 @@
     <app-delivery-form [pending]="saving()" (save)="save($event)" (cancelRequested)="back()" />
   } @else if (selected(); as delivery) {
     <section class="detail" [attr.aria-label]="'Entrega de ' + delivery.familiaId">
-      <h2 class="delivery-family">{{ delivery.familiaId }}</h2>
-      <dl>
-        <div>
+      <h2 class="data-title">{{ delivery.familiaId }}</h2>
+      <dl class="data-fields">
+        <div class="data-field data-field--primary">
           <dt>Fecha de entrega</dt>
           <dd>
             <time [attr.datetime]="delivery.fecha">{{ deliveryDateLabel(delivery.fecha) }}</time>
           </dd>
         </div>
-        <div>
+        <div class="data-field">
           <dt>Observación</dt>
           <dd>{{ delivery.observacion || 'Sin observación' }}</dd>
         </div>
       </dl>
-      <div class="delivery-actions">
+      <div
+        class="data-actions"
+        role="group"
+        [attr.aria-label]="'Acciones de la entrega de ' + delivery.familiaId"
+      >
         <button matButton="outlined" (click)="remove(delivery)">
           <mat-icon aria-hidden="true">delete</mat-icon>Eliminar entrega
         </button>

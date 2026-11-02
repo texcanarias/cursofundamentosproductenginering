@@ -38,6 +38,8 @@
 html {
   min-height: 100%;
   font-size: 112.5%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   @include mat.theme(
     (
       color: (
@@ -114,7 +116,18 @@ button,
   min-width: 48px;
 }
 
+[matButton] .mdc-button__label {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 :focus-visible {
+  outline: 3px solid var(--brand-green);
+  outline-offset: 4px;
+}
+
+button[matButton]:focus-visible,
+button[matIconButton]:focus-visible {
   outline: 3px solid var(--brand-green);
   outline-offset: 4px;
 }

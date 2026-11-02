@@ -57,6 +57,22 @@ describe('Inventory states', () => {
     expect(fixture.componentInstance.view()).toBe('edit');
   });
 
+  it('presents the expiry status with text and groups the card actions', () => {
+    save([
+      { ...lot, id: 'expired', caducidad: '2000-01-01' },
+      { ...lot, id: 'future', caducidad: '2099-01-01' },
+    ]);
+    const fixture = createPage();
+    fixture.detectChanges();
+    const [expired, future] = fixture.nativeElement.querySelectorAll('article');
+    expect(expired.querySelector('.expiry-state')?.textContent).toContain('Caducado');
+    expect(future.querySelector('.expiry-state')?.textContent).toContain('más de 30 días');
+    expect(expired.querySelector('.data-fields')).toBeTruthy();
+    expect(expired.querySelector('[role="group"]')?.getAttribute('aria-label')).toBe(
+      'Acciones de Arroz',
+    );
+  });
+
   it('keeps the entered values after a failed save and does not claim success', () => {
     const fixture = createPage();
     fixture.componentInstance.create();
