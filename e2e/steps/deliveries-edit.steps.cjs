@@ -15,8 +15,15 @@ When(
   },
 );
 
-Then('tras confirmarse el éxito veo la nueva entrega en el listado', async function () {
+Then('la entrega se guarda en el almacenamiento del navegador', async function () {
   const entries = await deliveries.api(this);
+  assert.equal(entries.length, 1);
+  assert.deepEqual(deliveries.pick(entries[0]), deliveries.sample);
+  this.deliveries = entries;
+});
+
+Then('tras confirmarse el éxito veo la nueva entrega en el listado', async function () {
+  const entries = this.deliveries ?? (await deliveries.api(this));
   assert.equal(entries.length, 1);
   const item = this.page.locator(`[data-delivery-id="${entries[0].id}"]`);
   await expect(item).toContainText(deliveries.sample.familiaId);
@@ -28,9 +35,9 @@ Given('que he introducido cambios en el formulario de alta', async function () {
   await deliveries.startCreate(this);
 });
 
-Then('regreso al listado sin enviar una petición de escritura', async function () {
+Then('regreso al listado sin modificar el almacenamiento', async function () {
   await expect(this.page.getByRole('heading', { name: 'Entregas', exact: true })).toBeVisible();
-  assert.equal(deliveries.writes(this).length, 0);
+  assert.deepEqual(await deliveries.api(this), this.before);
 });
 
 Then('las entregas guardadas permanecen sin cambios', async function () {
@@ -40,6 +47,7 @@ Then('las entregas guardadas permanecen sin cambios', async function () {
 When(
   'intento guardar con identificador de familia vacío o solo espacios, o con fecha ausente o inválida',
   async function () {
+    this.before = await deliveries.api(this);
     await deliveries.startCreate(this, { familiaId: '   ', fecha: '', observacion: '' });
     await this.page.getByRole('button', { name: 'Guardar entrega', exact: true }).click();
   },

@@ -1,5 +1,5 @@
 import { calendarDate, calendarLabel, isCalendarDate, requiredText } from '../shared/calendar-date';
-import { apiErrorMessage } from '../shared/http-error';
+import { storageErrorMessage } from '../shared/errors';
 
 export { calendarDate, isCalendarDate, requiredText };
 
@@ -16,5 +16,5 @@ export interface Lot extends LotData {
 export const expiryLabel = calendarLabel;
 
 export function lotError(error: unknown): string {
-  return apiErrorMessage(error, 'Esta partida ya no está disponible.');
+  return storageErrorMessage(error, 'Esta partida ya no está disponible.');
 }

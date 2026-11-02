@@ -2,21 +2,22 @@ const assert = require('node:assert/strict');
 const { Given, When, Then } = require('@cucumber/cucumber');
 const { expect } = require('@playwright/test');
 const deliveries = require('../support/deliveries.cjs');
+const storage = require('../support/storage.cjs');
 
-Given(
-  'el frontend consume el contrato de {string} de la especificación 005',
-  async function (path) {
-    assert.equal(path, '/api/entregas');
-    assert.deepEqual(await deliveries.api(this), []);
-  },
-);
+Given('el frontend guarda las entregas en el almacenamiento local del navegador', function () {
+  assert.equal(storage.key('deliveries'), 'a-la-par:entregas');
+});
 
 Given('cada entrega tiene identificador de familia, fecha y observación opcional', function () {
   assert.deepEqual(Object.keys(deliveries.sample), ['familiaId', 'fecha', 'observacion']);
 });
 
-Given('que el backend contiene varias entregas', async function () {
+Given('que el navegador contiene varias entregas', async function () {
   await deliveries.seed(this);
+});
+
+Given('que no hay entregas guardadas en el navegador', async function () {
+  await deliveries.seed(this, []);
 });
 
 When('accedo a la vista de entregas', async function () {
@@ -69,7 +70,7 @@ Then(
       .getByRole('button', { name: /Ver detalle/ })
       .click();
     await expect(this.page.locator('.detail')).toContainText(target.observacion);
-    assert.ok(this.requests.some((request) => request.url.endsWith(`/api/entregas/${target.id}`)));
+    assert.deepEqual(await deliveries.api(this, 'GET', undefined, target.id), target);
   },
 );
 
@@ -91,10 +92,11 @@ Given('que veo una entrega en el listado', async function () {
   await deliveries.open(this);
 });
 
-Then('se consulta la entrega por su identificador', async function () {
+Then('se recupera la entrega por su identificador desde el navegador', async function () {
   await expect(this.page.locator('.detail')).toBeVisible();
-  assert.ok(
-    this.requests.some((request) => request.url.endsWith(`/api/entregas/${this.deliveries[0].id}`)),
+  assert.deepEqual(
+    await deliveries.api(this, 'GET', undefined, this.deliveries[0].id),
+    this.deliveries[0],
   );
 });
 

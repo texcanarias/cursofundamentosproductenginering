@@ -1,5 +1,6 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { FormControl } from '@angular/forms';
+import { LocalStorageError } from '../shared/browser-storage';
+import { NotFoundError } from '../shared/browser-repository';
 import {
   calendarDate,
   deliveryDateLabel,
@@ -37,15 +38,9 @@ describe('Delivery dates and validation', () => {
   });
 
   it('provides actionable error messages without claiming success', () => {
-    expect(deliveryError(new HttpErrorResponse({ status: 0 }))).toContain('No hay conexión');
-    expect(deliveryError(new HttpErrorResponse({ status: 404 }))).toContain(
-      'entrega ya no está disponible',
-    );
-    expect(
-      deliveryError(
-        new HttpErrorResponse({ status: 400, error: { error: { mensaje: 'Fecha inválida' } } }),
-      ),
-    ).toBe('Fecha inválida');
+    expect(deliveryError(new LocalStorageError(0))).toContain('No se pudieron leer');
+    expect(deliveryError(new NotFoundError())).toContain('entrega ya no está disponible');
+    expect(deliveryError(new LocalStorageError(500))).toContain('No se pudieron guardar');
     expect(deliveryError(new Error())).toContain('No se pudo completar');
   });
 });

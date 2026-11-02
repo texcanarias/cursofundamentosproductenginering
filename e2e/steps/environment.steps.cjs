@@ -1,9 +1,6 @@
 const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
-const { mkdtemp, rm, writeFile } = require('node:fs/promises');
 const { once } = require('node:events');
-const { join } = require('node:path');
-const { tmpdir } = require('node:os');
 const {
   After,
   AfterAll,
@@ -17,12 +14,7 @@ const {
 const { chromium } = require('@playwright/test');
 
 const frontendUrl = 'http://127.0.0.1:4300';
-const backendUrl = 'http://127.0.0.1:4302';
 let frontendProcess;
-let backendProcess;
-let directory;
-let csvPath;
-let deliveriesCsvPath;
 let browser;
 let context;
 let page;
@@ -30,16 +22,9 @@ let page;
 setDefaultTimeout(30_000);
 
 BeforeAll(async () => {
-  await startBackend();
   frontendProcess = spawn(
     process.execPath,
-    [
-      'node_modules/@angular/cli/bin/ng.js',
-      'serve',
-      '--host=127.0.0.1',
-      '--port=4300',
-      '--proxy-config=e2e/proxy.conf.cjs',
-    ],
+    ['node_modules/@angular/cli/bin/ng.js', 'serve', '--host=127.0.0.1', '--port=4300'],
     { cwd: process.cwd(), stdio: 'ignore' },
   );
   await waitForService(frontendUrl, frontendProcess);
@@ -47,26 +32,27 @@ BeforeAll(async () => {
 });
 
 Before(async function (scenario) {
-  this.section = String(scenario?.gherkinDocument?.uri ?? '').includes('006-registro-entregas')
-    ? 'deliveries'
-    : 'inventory';
-  await writeFile(csvPath, '', 'utf8');
-  await writeFile(deliveriesCsvPath, '', 'utf8');
+  const uri = String(scenario?.gherkinDocument?.uri ?? '');
+  const tags = (scenario?.pickle?.tags ?? []).map((tag) => tag.name);
+  this.section =
+    tags.includes('@entregas') || uri.includes('006-registro-entregas')
+      ? 'deliveries'
+      : 'inventory';
   context = await browser.newContext();
+  await context.addInitScript(() => {
+    window.__failStorageWrites = false;
+    const original = Storage.prototype.setItem;
+    Storage.prototype.setItem = function (key, value) {
+      if (window.__failStorageWrites && String(key).startsWith('a-la-par:')) {
+        throw new DOMException('No hay espacio disponible', 'QuotaExceededError');
+      }
+      return original.call(this, key, value);
+    };
+  });
   page = await context.newPage();
   this.page = page;
   this.frontendUrl = frontendUrl;
-  this.backendUrl = backendUrl;
-  this.requests = [];
-  page.on('request', (request) => {
-    if (request.url().includes('/api/lotes') || request.url().includes('/api/entregas')) {
-      this.requests.push({
-        method: request.method(),
-        url: request.url(),
-        body: request.postDataJSON(),
-      });
-    }
-  });
+  await page.goto(frontendUrl);
 });
 
 After(async () => {
@@ -76,8 +62,6 @@ After(async () => {
 AfterAll(async () => {
   await browser?.close();
   await stopProcess(frontendProcess);
-  await stopProcess(backendProcess);
-  if (directory) await rm(directory, { recursive: true, force: true });
 });
 
 Given('el frontend está disponible', async () => {
@@ -103,27 +87,6 @@ async function waitForService(url, process) {
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
   throw new Error(`El servidor no respondió: ${url}`);
-}
-
-async function startBackend() {
-  directory = await mkdtemp(join(tmpdir(), 'a-la-par-e2e-'));
-  csvPath = join(directory, 'lotes.csv');
-  deliveriesCsvPath = join(directory, 'entregas.csv');
-  backendProcess = spawn(
-    process.execPath,
-    ['--import', './back/node_modules/tsx/dist/loader.mjs', './back/src/main.ts'],
-    {
-      cwd: process.cwd(),
-      stdio: 'ignore',
-      env: {
-        ...process.env,
-        PORT: '4302',
-        LOTES_CSV_PATH: csvPath,
-        ENTREGAS_CSV_PATH: deliveriesCsvPath,
-      },
-    },
-  );
-  await waitForService(`${backendUrl}/api/health`, backendProcess);
 }
 
 async function stopProcess(process) {

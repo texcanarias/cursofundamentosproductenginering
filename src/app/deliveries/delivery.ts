@@ -1,4 +1,4 @@
-import { apiErrorMessage } from '../shared/http-error';
+import { storageErrorMessage } from '../shared/errors';
 
 export interface DeliveryData {
   familiaId: string;
@@ -18,5 +18,5 @@ export {
 } from '../shared/calendar-date';
 
 export function deliveryError(error: unknown): string {
-  return apiErrorMessage(error, 'Esta entrega ya no está disponible.');
+  return storageErrorMessage(error, 'Esta entrega ya no está disponible.');
 }

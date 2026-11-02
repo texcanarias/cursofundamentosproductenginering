@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const { Given, When, Then } = require('@cucumber/cucumber');
 const { expect } = require('@playwright/test');
-const { sample, api, seed, open, article, writes } = require('../support/inventory.cjs');
+const { sample, api, seed, open, article } = require('../support/inventory.cjs');
 const sections = require('../support/sections.cjs');
 
 When('solicito eliminar una de ellas', async function () {
@@ -18,7 +18,7 @@ Then('aparece una confirmación que identifica su nombre, caducidad y ubicación
   await expect(dialog).toContainText('15 de marzo de 2027');
   await expect(dialog).toContainText(sample.ubicacion);
   await expect(article(this)).toBeVisible();
-  assert.equal(writes(this).length, 0);
+  assert.deepEqual(await api(this), this.lots);
 });
 
 When('confirmo la eliminación', async function () {
@@ -28,9 +28,13 @@ When('confirmo la eliminación', async function () {
   await expect(sections.article(this)).toBeHidden();
 });
 
-Then('se envía DELETE al identificador de esa partida', function () {
-  const request = writes(this).find((entry) => entry.method === 'DELETE');
-  assert.ok(request.url.endsWith(`/api/lotes/${this.lots[0].id}`));
+Then('se elimina solo esa partida del almacenamiento del navegador', async function () {
+  const lots = await api(this);
+  assert.ok(!lots.some((lot) => lot.id === this.lots[0].id));
+  assert.deepEqual(
+    lots.find((lot) => lot.id === this.lots[1].id),
+    this.lots[1],
+  );
 });
 
 Then('solo desaparece del inventario tras confirmarse el éxito', async function () {
@@ -47,6 +51,7 @@ Then('la otra partida permanece visible y sin cambios', async function () {
 Given('que he abierto la confirmación de eliminación de una partida', async function () {
   await seed(this, [sample]);
   await open(this);
+  this.before = await api(this);
   this.trigger = article(this).getByRole('button', { name: /Eliminar/ });
   await this.trigger.click();
   await expect(this.page.getByRole('dialog')).toBeVisible();
@@ -57,13 +62,14 @@ When('cancelo la eliminación', async function () {
   await expect(this.page.getByRole('dialog')).toBeHidden();
 });
 
-Then('no se envía ninguna petición DELETE', function () {
-  assert.equal(sections.writes(this).filter((request) => request.method === 'DELETE').length, 0);
+Then('el almacenamiento no cambia', async function () {
+  assert.deepEqual(await sections.api(this), this.before);
 });
 
 Then('la partida permanece visible', async function () {
   await expect(article(this)).toBeVisible();
 });
+
 Then('el foco regresa al control que abrió la confirmación', async function () {
   await expect(this.trigger).toBeFocused();
 });

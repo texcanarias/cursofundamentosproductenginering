@@ -1,5 +1,6 @@
 const inventory = require('./inventory.cjs');
 const deliveries = require('./deliveries.cjs');
+const storage = require('./storage.cjs');
 
 function isDeliveries(world) {
   return world.section === 'deliveries';
@@ -9,8 +10,8 @@ function support(world) {
   return isDeliveries(world) ? deliveries : inventory;
 }
 
-function apiPath(world) {
-  return isDeliveries(world) ? '/api/entregas' : '/api/lotes';
+function key(world) {
+  return storage.key(world.section);
 }
 
 function sample(world) {
@@ -25,8 +26,8 @@ function records(world) {
   return isDeliveries(world) ? world.deliveries : world.lots;
 }
 
-async function api(world) {
-  return support(world).api(world);
+async function api(world, method = 'GET', data, id = '') {
+  return support(world).api(world, method, data, id);
 }
 
 async function seed(world, entries) {
@@ -53,15 +54,36 @@ async function saved(world) {
   return support(world).saved(world);
 }
 
-function writes(world) {
-  return world.requests.filter(
-    (request) =>
-      ['POST', 'PUT', 'DELETE'].includes(request.method) && request.url.includes(apiPath(world)),
-  );
-}
-
 function checkForm(world, data) {
   return support(world).checkForm(world, data);
+}
+
+function pick(world, record) {
+  return support(world).pick(record);
+}
+
+async function read(world, section = world.section) {
+  return storage.read(world, section);
+}
+
+async function write(world, entries, section = world.section) {
+  return storage.write(world, entries, section);
+}
+
+async function clear(world, section = world.section) {
+  return storage.clear(world, section);
+}
+
+async function corrupt(world, section = world.section) {
+  return storage.corrupt(world, section);
+}
+
+async function failWrites(world, fail = true) {
+  return storage.failWrites(world, fail);
+}
+
+async function allowWrites(world) {
+  return storage.allowWrites(world);
 }
 
 function dateLabel(value) {
@@ -75,7 +97,7 @@ function dateLabel(value) {
 
 module.exports = {
   isDeliveries,
-  apiPath,
+  key,
   sample,
   second,
   records,
@@ -86,7 +108,13 @@ module.exports = {
   fill,
   startCreate,
   saved,
-  writes,
   checkForm,
+  pick,
+  read,
+  write,
+  clear,
+  corrupt,
+  failWrites,
+  allowWrites,
   dateLabel,
 };

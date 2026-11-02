@@ -1,33 +1,31 @@
-import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { BrowserRepository } from '../shared/browser-repository';
 import type { Lot, LotData } from './lot';
+
+const KEY = 'a-la-par:lotes';
 
 @Injectable({ providedIn: 'root' })
 export class LotApi {
-  private readonly http = inject(HttpClient);
-  private readonly url = '/api/lotes';
+  private readonly repository = new BrowserRepository<Lot, LotData>(KEY, 'lot');
 
-  list() {
-    return this.http.get<Lot[]>(this.url);
+  list(): Observable<Lot[]> {
+    return this.repository.list();
   }
 
-  get(id: string) {
-    return this.http.get<Lot>(this.path(id));
+  get(id: string): Observable<Lot> {
+    return this.repository.get(id);
   }
 
-  create(data: LotData) {
-    return this.http.post<Lot>(this.url, data);
+  create(data: LotData): Observable<Lot> {
+    return this.repository.create(data);
   }
 
-  update(id: string, data: LotData) {
-    return this.http.put<Lot>(this.path(id), data);
+  update(id: string, data: LotData): Observable<Lot> {
+    return this.repository.update(id, data);
   }
 
-  delete(id: string) {
-    return this.http.delete<void>(this.path(id));
-  }
-
-  private path(id: string): string {
-    return `${this.url}/${encodeURIComponent(id)}`;
+  delete(id: string): Observable<void> {
+    return this.repository.delete(id);
   }
 }

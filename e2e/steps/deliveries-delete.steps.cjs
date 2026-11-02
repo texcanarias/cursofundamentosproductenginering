@@ -15,13 +15,14 @@ Then(
     await expect(dialog).toContainText(deliveries.label(deliveries.sample.fecha));
     await expect(dialog).toContainText(deliveries.sample.observacion);
     await expect(deliveries.article(this)).toBeVisible();
-    assert.equal(deliveries.writes(this).length, 0);
+    assert.deepEqual(await deliveries.api(this), this.deliveries);
   },
 );
 
-Then('se envía DELETE al identificador de esa entrega', function () {
-  const request = deliveries.writes(this).find((entry) => entry.method === 'DELETE');
-  assert.ok(request.url.endsWith(`/api/entregas/${this.deliveries[0].id}`));
+Then('se elimina solo esa entrega del almacenamiento del navegador', async function () {
+  const entries = await deliveries.api(this);
+  assert.ok(!entries.some((entry) => entry.id === this.deliveries[0].id));
+  assert.deepEqual(entries, [this.deliveries[1]]);
 });
 
 Then('solo desaparece del listado tras confirmarse el éxito', async function () {
@@ -33,6 +34,7 @@ Then('solo desaparece del listado tras confirmarse el éxito', async function ()
 Given('que he abierto la confirmación de eliminación de una entrega', async function () {
   await deliveries.seed(this, [deliveries.sample]);
   await deliveries.open(this);
+  this.before = await deliveries.api(this);
   this.trigger = deliveries.article(this).getByRole('button', { name: /Eliminar entrega/ });
   await this.trigger.click();
   await expect(this.page.getByRole('dialog')).toBeVisible();

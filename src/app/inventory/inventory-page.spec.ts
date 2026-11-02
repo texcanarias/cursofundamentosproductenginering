@@ -1,84 +1,82 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { describe, expect, it, vi } from 'vitest';
 import { InventoryPage } from './inventory-page';
 
+const KEY = 'a-la-par:lotes';
 const data = { nombreProducto: 'Arroz', caducidad: '2027-03-15', ubicacion: 'Almacén A' };
 const lot = { id: 'one', ...data };
-let http: HttpTestingController;
+
+function save(records: unknown[]): void {
+  localStorage.setItem(KEY, JSON.stringify(records));
+}
+
+function createPage() {
+  const fixture = TestBed.createComponent(InventoryPage);
+  fixture.detectChanges();
+  return fixture;
+}
 
 beforeEach(() => {
-  TestBed.configureTestingModule({
-    imports: [InventoryPage],
-    providers: [provideHttpClient(), provideHttpClientTesting()],
-  });
-  http = TestBed.inject(HttpTestingController);
+  localStorage.clear();
+  TestBed.configureTestingModule({ imports: [InventoryPage] });
 });
 
-afterEach(() => http.verify());
+afterEach(() => vi.restoreAllMocks());
 
 describe('Inventory states', () => {
-  it('distinguishes loading, empty inventory and populated inventory', () => {
-    const fixture = TestBed.createComponent(InventoryPage);
-    fixture.detectChanges();
-    expect(fixture.componentInstance.loading()).toBe(true);
-    http.expectOne('/api/lotes').flush([]);
-    fixture.detectChanges();
+  it('distinguishes empty and populated inventory', () => {
+    const fixture = createPage();
     expect(fixture.nativeElement.textContent).toContain('No hay productos registrados');
+
+    save([lot, { ...lot, id: 'two' }]);
     fixture.componentInstance.load();
-    http.expectOne('/api/lotes').flush([lot, { ...lot, id: 'two' }]);
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelectorAll('article')).toHaveLength(2);
   });
 
-  it('does not present a failed query as an empty inventory and can retry', () => {
-    const fixture = TestBed.createComponent(InventoryPage);
-    http.expectOne('/api/lotes').flush({}, { status: 500, statusText: 'Error' });
-    fixture.detectChanges();
+  it('does not present unreadable data as an empty inventory and can retry', () => {
+    localStorage.setItem(KEY, '{invalid');
+    const fixture = createPage();
     expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeTruthy();
     expect(fixture.nativeElement.textContent).not.toContain('No hay productos registrados');
+
+    save([lot]);
     fixture.componentInstance.load();
-    http.expectOne('/api/lotes').flush([lot]);
+    fixture.detectChanges();
     expect(fixture.componentInstance.error()).toBe('');
+    expect(fixture.nativeElement.querySelectorAll('article')).toHaveLength(1);
   });
 
   it('loads the selected identifier for detail and edit views', () => {
-    const fixture = TestBed.createComponent(InventoryPage);
-    http.expectOne('/api/lotes').flush([lot]);
+    save([lot]);
+    const fixture = createPage();
     fixture.componentInstance.show(lot, 'detail');
-    http.expectOne('/api/lotes/one').flush(lot);
     expect(fixture.componentInstance.selected()).toEqual(lot);
     expect(fixture.componentInstance.view()).toBe('detail');
     fixture.componentInstance.show(lot, 'edit');
-    http.expectOne('/api/lotes/one').flush(lot);
     expect(fixture.componentInstance.view()).toBe('edit');
   });
 
-  it('keeps entered values after a failed save and does not duplicate writes', () => {
-    const fixture = TestBed.createComponent(InventoryPage);
-    http.expectOne('/api/lotes').flush([]);
+  it('keeps the entered values after a failed save and does not claim success', () => {
+    const fixture = createPage();
     fixture.componentInstance.create();
-    fixture.detectChanges();
-    const form = fixture.componentInstance;
-    form.save(data);
-    form.save(data);
-    http
-      .expectOne({ method: 'POST', url: '/api/lotes' })
-      .flush({}, { status: 500, statusText: 'Error' });
-    expect(form.view()).toBe('create');
-    expect(form.saving()).toBe(false);
-    expect(form.notice()).toBe('');
-    expect(form.error()).toBeTruthy();
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('quota');
+    });
+    fixture.componentInstance.save(data);
+    expect(fixture.componentInstance.view()).toBe('create');
+    expect(fixture.componentInstance.saving()).toBe(false);
+    expect(fixture.componentInstance.notice()).toBe('');
+    expect(fixture.componentInstance.error()).toContain('No se pudieron guardar');
   });
 
   it('reports a missing lot and refreshes the inventory when returning', () => {
-    const fixture = TestBed.createComponent(InventoryPage);
-    http.expectOne('/api/lotes').flush([lot]);
+    save([lot]);
+    const fixture = createPage();
+    save([]);
     fixture.componentInstance.show(lot, 'edit');
-    http.expectOne('/api/lotes/one').flush({}, { status: 404, statusText: 'Not Found' });
     expect(fixture.componentInstance.missing()).toBe(true);
     fixture.componentInstance.back();
-    http.expectOne('/api/lotes').flush([]);
     expect(fixture.componentInstance.missing()).toBe(false);
   });
 });

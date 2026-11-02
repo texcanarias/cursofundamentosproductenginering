@@ -8,8 +8,8 @@ const {
   article,
   fill,
   startCreate,
-  writes,
   checkForm,
+  pick,
 } = require('../support/inventory.cjs');
 const sections = require('../support/sections.cjs');
 
@@ -26,14 +26,15 @@ When('confirmo el guardado', async function () {
   await sections.saved(this);
 });
 
-Then('se envía una petición POST a {string}', function (path) {
-  const request = sections.writes(this).find((entry) => entry.method === 'POST');
-  assert.ok(request.url.endsWith(path));
-  assert.deepEqual(request.body, sections.sample(this));
+Then('la partida se guarda en el almacenamiento del navegador', async function () {
+  const lots = await api(this);
+  assert.equal(lots.length, 1);
+  assert.deepEqual(pick(lots[0]), sample);
+  this.lots = lots;
 });
 
 Then('tras confirmarse el éxito veo la nueva partida en el inventario', async function () {
-  const lots = await api(this);
+  const lots = this.lots ?? (await api(this));
   assert.equal(lots.length, 1);
   await expect(this.page.locator(`[data-lot-id="${lots[0].id}"]`)).toContainText(
     sample.nombreProducto,
@@ -66,10 +67,14 @@ When('cambio el nombre, la caducidad o la ubicación y guardo', async function (
   await sections.saved(this);
 });
 
-Then('se envía una petición PUT con los tres campos al identificador de esa partida', function () {
-  const request = writes(this).find((entry) => entry.method === 'PUT');
-  assert.ok(request.url.endsWith(`/api/lotes/${this.lots[0].id}`));
-  assert.deepEqual(request.body, this.changed);
+Then('se actualiza solo esa partida en el almacenamiento del navegador', async function () {
+  const lots = await api(this);
+  const updated = lots.find((lot) => lot.id === this.lots[0].id);
+  assert.deepEqual(pick(updated), this.changed);
+  assert.deepEqual(
+    lots.find((lot) => lot.id === this.lots[1].id),
+    this.lots[1],
+  );
 });
 
 Then('tras confirmarse el éxito veo los datos actualizados', async function () {
@@ -95,9 +100,9 @@ When('cancelo la operación', async function () {
   await this.page.getByRole('button', { name: 'Cancelar', exact: true }).click();
 });
 
-Then('regreso al inventario sin enviar una petición de escritura', async function () {
+Then('regreso al inventario sin modificar el almacenamiento', async function () {
   await expect(this.page.getByRole('heading', { name: 'Inventario', exact: true })).toBeVisible();
-  assert.equal(writes(this).length, 0);
+  assert.deepEqual(await api(this), this.before);
 });
 
 Then('las partidas guardadas permanecen sin cambios', async function () {
@@ -107,6 +112,7 @@ Then('las partidas guardadas permanecen sin cambios', async function () {
 When(
   'intento guardar con nombre o ubicación vacíos o solo espacios, o con caducidad ausente o inválida',
   async function () {
+    this.before = await api(this);
     await startCreate(this, { nombreProducto: '   ', caducidad: '', ubicacion: '   ' });
     await this.page.getByRole('button', { name: 'Guardar producto', exact: true }).click();
   },
@@ -141,8 +147,8 @@ Then('los errores pueden ser anunciados por un lector de pantalla', async functi
   }
 });
 
-Then('no se envía ninguna petición de escritura', function () {
-  assert.equal(sections.writes(this).length, 0);
+Then('no se modifica el almacenamiento', async function () {
+  assert.deepEqual(await sections.api(this), this.before);
 });
 
 When('registro una partida con una fecha de caducidad pasada válida', async function () {
@@ -163,10 +169,11 @@ Then('el formulario permite guardarla', async function () {
   assert.equal(this.lots.length, 1);
 });
 
-Then('la fecha se envía como {string} sin hora ni zona horaria', function (format) {
+Then('la fecha se guarda como {string} sin hora ni zona horaria', async function (format) {
   assert.equal(format, 'AAAA-MM-DD');
   const field = sections.isDeliveries(this) ? 'fecha' : 'caducidad';
-  assert.equal(sections.writes(this)[0].body[field], this.expired[field]);
+  const records = await sections.api(this);
+  assert.equal(records[0][field], this.expired[field]);
 });
 
 Then('al volver a consultarla veo el mismo día seleccionado', async function () {

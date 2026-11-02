@@ -1,23 +1,40 @@
-const assert = require('node:assert/strict');
 const { expect } = require('@playwright/test');
+const storage = require('./storage.cjs');
 
+const section = 'inventory';
 const sample = { nombreProducto: 'Arroz', caducidad: '2027-03-15', ubicacion: 'Almacén A' };
 const second = { ...sample, caducidad: '2027-06-20', ubicacion: 'Almacén B' };
 
 async function api(world, method = 'GET', data, id = '') {
-  const response = await fetch(`${world.backendUrl}/api/lotes${id ? `/${id}` : ''}`, {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-    body: data ? JSON.stringify(data) : undefined,
-  });
-  assert.ok(response.ok, `Backend response: ${response.status}`);
-  return response.status === 204 ? undefined : response.json();
+  const records = await storage.read(world, section);
+  if (method === 'GET') return id ? records.find((record) => record.id === id) : records;
+  if (method === 'POST') {
+    const record = { id: `lot-${crypto.randomUUID()}`, ...data };
+    await storage.write(world, [...records, record], section);
+    return record;
+  }
+  if (method === 'PUT') {
+    const record = { ...data, id };
+    await storage.write(
+      world,
+      records.map((entry) => (entry.id === id ? record : entry)),
+      section,
+    );
+    return record;
+  }
+  if (method === 'DELETE') {
+    await storage.write(
+      world,
+      records.filter((entry) => entry.id !== id),
+      section,
+    );
+  }
+  return undefined;
 }
 
 async function seed(world, entries = [sample, second]) {
-  for (const lot of await api(world)) await api(world, 'DELETE', undefined, lot.id);
-  world.lots = [];
-  for (const data of entries) world.lots.push(await api(world, 'POST', data));
+  world.lots = entries.map((data, index) => ({ id: `lot-${index + 1}`, ...data }));
+  await storage.write(world, world.lots, section);
 }
 
 async function open(world) {
@@ -48,13 +65,6 @@ async function saved(world) {
   await expect(world.page.getByText('Cargando inventario…', { exact: true })).toBeHidden();
 }
 
-function writes(world) {
-  return world.requests.filter(
-    (request) =>
-      ['POST', 'PUT', 'DELETE'].includes(request.method) && request.url.includes('/api/lotes'),
-  );
-}
-
 async function checkForm(world, data = sample) {
   await expect(world.page.getByLabel('Nombre del producto', { exact: true })).toHaveValue(
     data.nombreProducto,
@@ -65,7 +75,16 @@ async function checkForm(world, data = sample) {
   await expect(world.page.getByLabel('Dónde está', { exact: true })).toHaveValue(data.ubicacion);
 }
 
+function pick(record) {
+  return {
+    nombreProducto: record.nombreProducto,
+    caducidad: record.caducidad,
+    ubicacion: record.ubicacion,
+  };
+}
+
 module.exports = {
+  section,
   sample,
   second,
   api,
@@ -75,6 +94,6 @@ module.exports = {
   fill,
   startCreate,
   saved,
-  writes,
   checkForm,
+  pick,
 };

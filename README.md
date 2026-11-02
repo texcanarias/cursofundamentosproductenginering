@@ -1,10 +1,17 @@
-# Entorno de desarrollo
+# A la par · Gestión comunitaria
 
-Frontend Angular 22 y backend Node.js/TypeScript en paquetes independientes. El backend usa Express y persiste registros CSV mediante un adaptador de infraestructura.
+Aplicación web para gestionar el inventario de productos y las entregas de ayuda alimentaria a
+familias. El frontend está construido con Angular 22 y Angular Material, sigue un enfoque
+mobile-first y accesible, y funciona como PWA.
+
+La información se guarda **en el propio navegador** mediante `localStorage`, por lo que la
+aplicación no necesita un servidor para funcionar. El backend Node.js/Express con persistencia CSV
+se conserva en `back/` como pieza independiente y no lo usa el frontend.
 
 ## Requisitos
 
-Node.js 24.15 o superior. Con nvm, ejecuta `nvm use` desde la raíz para activar la versión de `.nvmrc`.
+Node.js 24.15 o superior. Con nvm, ejecuta `nvm use` desde la raíz para activar la versión de
+`.nvmrc`.
 
 ## Frontend
 
@@ -14,13 +21,39 @@ npx playwright install chromium
 npm start
 ```
 
-Angular Material está configurado. Las llamadas `/api/*` se reenvían al backend local en el puerto 3000.
+La aplicación queda disponible en `http://localhost:4200`. Las rutas principales son:
+
+| Ruta         | Contenido                    |
+| ------------ | ---------------------------- |
+| `/inventario` | Partidas de productos       |
+| `/entregas`   | Entregas de ayuda a familias |
+
+### Persistencia en el navegador
+
+| Clave               | Contenido                                     |
+| ------------------- | --------------------------------------------- |
+| `a-la-par:lotes`     | Partidas con nombre, caducidad, ubicación e id |
+| `a-la-par:entregas`  | Entregas con familia, fecha, observación e id  |
+
+- Una clave ausente equivale a una lista vacía.
+- Los datos se conservan al recargar la página y se separan por tipo de registro.
+- Si el navegador no puede leer o escribir, la interfaz muestra un error accesible y no confirma
+  cambios que no se hayan guardado.
+- Los datos pertenecen al navegador y al perfil de la persona que los creó. Limpiar los datos del
+  sitio, cambiar de navegador o usar otro dispositivo elimina o separa esa información.
+
+La especificación completa está en
+[`spec/009-persistencia-navegador/`](spec/009-persistencia-navegador/).
 
 ## PWA
 
-El build de producción genera el manifiesto y los archivos `ngsw.json`/`ngsw-worker.js`. El service worker no se registra en desarrollo; para instalar la app, sirve el build sobre HTTPS o `localhost`. Los iconos actuales son placeholders de Angular y deben sustituirse por la identidad visual del producto antes de publicar.
+El build de producción genera el manifiesto y los archivos `ngsw.json`/`ngsw-worker.js`. El service
+worker no se registra en desarrollo; para instalar la app, sirve el build sobre HTTPS o `localhost`.
+Los iconos y el resto de activos de marca están en `public/brand/`.
 
-## Backend
+## Backend opcional
+
+El backend mantiene su propia API y persistencia CSV para desarrollo o experimentación:
 
 ```bash
 cd back
@@ -28,92 +61,57 @@ npm ci
 npm run dev
 ```
 
-La API de salud está disponible en `http://localhost:3000/api/health`. Los datos locales van en `back/data/`, ignorado por Git.
+La API de salud está disponible en `http://localhost:3000/api/health`. Los datos locales van en
+`back/data/`, ignorado por Git. El frontend no consume estos endpoints.
 
 ## Validaciones
 
-Ejecuta estos comandos desde la raíz, en terminales separadas si ambos servidores están activos:
+Ejecuta estos comandos desde la raíz:
 
 ```bash
 npm run lint
+npm run format:check
 npm test
 npm run test:gherkin
-npm --prefix back run lint
-npm --prefix back run test
-npm --prefix back run build
+npm run build
 ```
 
-## Despliegue en Render
+Las pruebas unitarias usan Vitest. Los escenarios Gherkin se ejecutan con Cucumber y Playwright
+contra el frontend real, sembrando y verificando los datos en `localStorage`.
 
-### Archivo de configuración automática: `render.yaml`
+Validaciones opcionales del backend:
 
-El repositorio incluye un archivo `render.yaml` (Render Blueprint) en la raíz que define automáticamente los servicios, variables de entorno y rutas de proxy. Al conectar el repositorio en Render, el dashboard detecta este archivo y configura ambos servicios sin intervención manual.
+```bash
+npm run lint:back
+npm run test:back
+npm run build:back
+```
 
-### Backend (Node service)
+## Despliegue
 
-1. Crear un nuevo Web Service en Render conectado al repositorio.
-2. Configurar las variables de entorno:
-   - `PORT`: Render lo asigna automáticamente.
-   - `LOTES_CSV_PATH`: `/opt/render/project/src/back/data/lotes.csv` (o ruta absoluta al CSV).
-   - `ENTREGAS_CSV_PATH`: `/opt/render/project/src/back/data/entregas.csv`.
-   - `NODE_ENV`: `production`.
-3. Build command: `npm --prefix back run build`
-4. Start command: `npm --prefix back run start`
-5. El health check responde en `/api/health`.
+Al guardar los datos en el navegador, el frontend puede publicarse como sitio estático. No se
+necesitan reglas de proxy ni variables de entorno para que el CRUD funcione.
 
-### Frontend (Static Site)
+### Render
 
-1. Crear un nuevo Static Site en Render.
-2. Build command: `npm run build`
-3. Publish directory: `dist/front/browser`
-4. Configurar el proxy hacia el backend en el dashboard de Render (redirigir `/api/*` a la URL del backend).
-5. El frontend incluye un Service Worker (PWA) que se activa automáticamente sobre HTTPS.
+1. Crear un Static Site conectado al repositorio.
+2. Build command: `npm run build`.
+3. Publish directory: `dist/front/browser`.
 
-### Variables de entorno requeridas
+### Vercel
 
-| Variable | Descripción | Ejemplo |
-|----------|-------------|---------|
-| `PORT` | Puerto del servidor (Render lo asigna) | `3000` |
-| `LOTES_CSV_PATH` | Ruta al CSV de inventario | `back/data/lotes.csv` |
-| `ENTREGAS_CSV_PATH` | Ruta al CSV de entregas | `back/data/entregas.csv` |
-| `NODE_ENV` | Entorno de ejecución | `production` |
+1. Conectar el repositorio en [Vercel](https://vercel.com/dashboard).
+2. Build command: `npm run build`.
+3. Output directory: `dist/front/browser`.
 
-### Notas
+El archivo `vercel.json` incluido conserva la función serverless opcional del backend; el frontend
+no la utiliza. Si solo se publica la aplicación, el despliegue estático es suficiente.
 
-- Los archivos CSV en `back/data/` están en `.gitignore`; se crean automáticamente en el primer arranque si no existen (directorio y archivos vacíos).
-- El backend usa `process.env['PORT'] ?? 3000` para respetar el puerto asignado por Render.
-- El frontend compila a `dist/front/browser/` y Render sirve esa carpeta estáticamente.
+## Estructura
 
-## Despliegue en Vercel
-
-### Archivo de configuración automática: `vercel.json`
-
-El repositorio incluye un archivo `vercel.json` en la raíz que define automáticamente el build, el output y las rutas de proxy. Al conectar el repositorio en Vercel, la plataforma detecta este archivo y configura el despliegue sin intervención manual.
-
-### Backend (Serverless Function)
-
-- Punto de entrada: `api/index.cjs` (exporta la app Express como handler).
-- Variables de entorno (configuradas en `vercel.json`):
-  - `LOTES_CSV_PATH`: `/tmp/lotes.csv`
-  - `ENTREGAS_CSV_PATH`: `/tmp/entregas.csv`
-  - `NODE_ENV`: `production`
-- Vercel asigna automáticamente el puerto; no se necesita `PORT`.
-
-### Frontend (Static Site)
-
-1. Vercel detecta automáticamente el framework Angular.
-2. Build Command: `npm run build`
-3. Output Directory: `dist/front/browser`
-4. Las rutas `/api/*` se redirigen al backend serverless mediante `rewrites` en `vercel.json`.
-
-### Pasos de despliegue
-
-1. Conectar el repositorio en [Vercel Dashboard](https://vercel.com/dashboard).
-2. Vercel detecta `vercel.json` y configura el despliegue automáticamente.
-3. Verificar que el build del frontend y del backend pasan sin errores.
-4. Acceder a la URL provista por Vercel.
-
-### Limitaciones
-
-- **Persistencia de CSV**: Vercel usa un sistema de archivos de solo lectura excepto `/tmp`. Los archivos CSV se almacenan en `/tmp` y se pierden cuando la función serverless se recicla. Para persistencia real, migrar a una base de datos externa.
-- **Cold starts**: Las funciones serverless tienen un arranque en frío que puede añadir latencia al primer request.
+| Tecnología | Ruta   | Descripción          |
+| ---------- | ------ | -------------------- |
+| (raíz)     | `/`    | Frontend Angular     |
+| Backend    | `back/` | Backend Node.js/CSV  |
+| Specs      | `spec/` | Especificaciones     |
+| E2E        | `e2e/`  | Pasos y soporte Gherkin |

@@ -1,96 +1,35 @@
 const assert = require('node:assert/strict');
 const { Given, When, Then } = require('@cucumber/cucumber');
 const { expect } = require('@playwright/test');
-const {
-  sample,
-  api,
-  seed,
-  open,
-  article,
-  fill,
-  startCreate,
-  writes,
-  checkForm,
-} = require('../support/inventory.cjs');
-const deliveries = require('../support/deliveries.cjs');
+const { sample, api, seed, open, article, fill, checkForm } = require('../support/inventory.cjs');
 const sections = require('../support/sections.cjs');
 
-When('una consulta o una operación CRUD está pendiente', async function () {
-  if (sections.isDeliveries(this)) return pendingDelivery(this);
-  await startCreate(this);
-  const gate = new Promise((resolve) => {
-    this.release = resolve;
-  });
-  await this.page.route('**/api/lotes', async (route) => {
-    await gate;
-    await route.continue();
-  });
-  await this.page.getByRole('button', { name: 'Guardar producto', exact: true }).click();
-  await expect(this.page.getByRole('button', { name: 'Guardando…', exact: true })).toBeDisabled();
-});
-
-Then('se indica de forma accesible que la operación está en curso', async function () {
-  const text = sections.isDeliveries(this) ? 'Guardando entrega…' : 'Guardando producto…';
-  await expect(this.page.getByRole('status')).toContainText(text);
-});
-
-Then(
-  'no puedo repetir el envío del mismo formulario o confirmación mientras está pendiente',
-  async function () {
-    await this.page
-      .getByRole('button', { name: 'Guardando…', exact: true })
-      .evaluate((button) => button.click());
-    assert.equal(sections.writes(this).length, 1);
-  },
-);
-
-Then('no se muestra éxito antes de la respuesta del backend', async function () {
-  const success = sections.isDeliveries(this) ? 'Entrega registrada.' : 'Producto guardado.';
-  const heading = sections.isDeliveries(this) ? 'Entregas' : 'Inventario';
-  await expect(this.page.getByRole('status')).not.toContainText(success);
-  this.release();
-  await expect(this.page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
-  assert.equal((await sections.api(this)).length, 1);
-});
-
-Given('que falla la consulta al backend', async function () {
-  const path = `**${sections.apiPath(this)}`;
-  const message = 'No se pudo consultar.';
-  await this.page.route(
-    path,
-    (route) => route.fulfill({ status: 500, json: { error: { mensaje: message } } }),
-    { times: 1 },
-  );
+Given('que los datos guardados en el navegador no se pueden leer', async function () {
+  await sections.corrupt(this);
 });
 
 Then('veo un mensaje de error accesible y una acción para reintentar', async function () {
-  await expect(this.page.getByRole('alert')).toContainText('No se pudo consultar');
+  await expect(this.page.getByRole('alert')).toContainText('No se pudieron leer');
   await expect(this.page.getByRole('button', { name: 'Reintentar' })).toBeVisible();
 });
 
 Then('el error no se presenta como un inventario vacío', async function () {
   await expect(this.page.getByText('No hay productos registrados')).toBeHidden();
+  await seed(this, []);
   await this.page.getByRole('button', { name: 'Reintentar' }).click();
   await expect(this.page.getByText('No hay productos registrados')).toBeVisible();
 });
 
-Given('que el backend rechaza un alta, una edición o una eliminación', async function () {
-  await seed(this, [sample]);
-  this.failure = 'No se pudo guardar en el almacén.';
-  await this.page.route('**/api/lotes**', (route) =>
-    route.request().method() === 'GET'
-      ? route.continue()
-      : route.fulfill({ status: 500, json: { error: { mensaje: this.failure } } }),
-  );
+Given('que el navegador rechaza nuevas escrituras', async function () {
+  await sections.seed(this, [sections.sample(this)]);
+  await sections.open(this);
+  await sections.failWrites(this, true);
+  this.failure = 'No se pudieron guardar';
 });
 
-When('recibo la respuesta de error', async function () {
+When('intento crear, editar o eliminar una partida', async function () {
   this.preserved = 0;
-  if (sections.isDeliveries(this)) {
-    await deliveries.rejectedCreate(this);
-    await deliveries.rejectedDelete(this);
-    return;
-  }
+  this.before = await api(this);
   await rejectedForm(this, 'create');
   await rejectedForm(this, 'edit');
   await rejectedDelete(this);
@@ -111,20 +50,20 @@ Then('se conservan los valores del formulario si estaba creando o editando', fun
 });
 
 Then('puedo corregir los datos o reintentar cuando proceda', async function () {
-  await this.page.unroute(`**${sections.apiPath(this)}**`);
+  await sections.allowWrites(this);
   const name = sections.isDeliveries(this) ? 'Eliminar entrega' : 'Eliminar partida';
   await this.page.getByRole('button', { name, exact: true }).click();
   await expect(this.page.getByRole('dialog')).toBeHidden();
   assert.deepEqual(await sections.api(this), []);
 });
 
-Given('que una partida visible se ha eliminado en el backend', async function () {
+Given('que una partida visible se ha eliminado en otra pestaña', async function () {
   await seed(this, [sample]);
   await open(this);
   await api(this, 'DELETE', undefined, this.lots[0].id);
 });
 
-When('intento consultar, editar o eliminar esa partida y recibo HTTP 404', async function () {
+When('intento consultar, editar o eliminar esa partida', async function () {
   await article(this)
     .getByRole('button', { name: /Ver detalle/ })
     .click();
@@ -139,56 +78,11 @@ Then('puedo volver al inventario actualizado', async function () {
   await expect(this.page.getByText('No hay productos registrados')).toBeVisible();
 });
 
-Given('que no hay conexión con el backend', async function () {
-  await sections.seed(this, [sections.sample(this)]);
-  this.failure = 'No hay conexión';
-  await this.page.route(`**${sections.apiPath(this)}**`, (route) =>
-    route.request().method() === 'GET' ? route.continue() : route.abort('internetdisconnected'),
-  );
-});
-
-When('intento guardar o eliminar una partida', async function () {
-  await rejectedForm(this, 'create');
-  await rejectedDelete(this);
-});
-
-Then('se informa de que no se ha podido completar la operación', async function () {
-  await expect(this.page.getByRole('alert')).toContainText('No hay conexión');
-});
-
-Then('no se confirma ni se encola una escritura para sincronizarla después', async function () {
-  const records = sections.records(this);
-  assert.deepEqual(await sections.api(this), records);
-  assert.equal(sections.writes(this).length, 2);
-  await this.page.unroute(`**${sections.apiPath(this)}**`);
-  await sections.open(this);
-  assert.deepEqual(await sections.api(this), records);
-  assert.equal(sections.writes(this).length, 2);
-});
-
-async function pendingDelivery(world) {
-  await deliveries.startCreate(world);
-  const gate = new Promise((resolve) => {
-    world.release = resolve;
-  });
-  await world.page.route('**/api/entregas', async (route) => {
-    await gate;
-    await route.continue();
-  });
-  await world.page.getByRole('button', { name: 'Guardar entrega', exact: true }).click();
-  await expect(world.page.getByRole('button', { name: 'Guardando…', exact: true })).toBeDisabled();
-}
-
 async function rejectedForm(world, mode) {
-  const data = { ...sample, nombreProducto: 'Arroz integral' };
-  if (mode === 'create') await startCreate(world, data);
-  else {
-    await open(world);
-    await article(world)
-      .getByRole('button', { name: /Editar/ })
-      .click();
-    await fill(world, data);
-  }
+  const data = { ...sample, nombreProducto: `Arroz integral ${mode}` };
+  const button = mode === 'create' ? 'Añadir producto' : 'Editar';
+  await world.page.getByRole('button', { name: button }).first().click();
+  await fill(world, data);
   await world.page.getByRole('button', { name: 'Guardar producto', exact: true }).click();
   await expect(world.page.getByRole('alert')).toContainText(world.failure);
   await checkForm(world, data);
@@ -197,7 +91,6 @@ async function rejectedForm(world, mode) {
 }
 
 async function rejectedDelete(world) {
-  await open(world);
   await article(world)
     .getByRole('button', { name: /Eliminar/ })
     .click();

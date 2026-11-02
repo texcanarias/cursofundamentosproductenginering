@@ -1,4 +1,3 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { DOCUMENT } from '@angular/common';
 import {
   afterNextRender,
@@ -17,6 +16,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { finalize, type Observable } from 'rxjs';
+import { isNotFound } from '../shared/errors';
 import { DeleteLotDialog } from './delete-lot-dialog';
 import { expiryLabel, lotError, type Lot, type LotData } from './lot';
 import { LotApi } from './lot-api';
@@ -142,9 +142,9 @@ export class InventoryPage {
       )
       .subscribe({
         next,
-        error: (error: HttpErrorResponse) => {
+        error: (error: unknown) => {
           this.error.set(lotError(error));
-          this.missing.set(error.status === 404);
+          this.missing.set(isNotFound(error));
         },
       });
   }

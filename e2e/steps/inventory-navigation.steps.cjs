@@ -3,26 +3,24 @@ const { Given, When, Then } = require('@cucumber/cucumber');
 const { expect } = require('@playwright/test');
 const { sample, api, seed, open, article } = require('../support/inventory.cjs');
 const sections = require('../support/sections.cjs');
+const storage = require('../support/storage.cjs');
 
 Given('que utilizo el frontend Angular con Angular Material', function () {
   assert.ok(this.frontendUrl);
 });
 
-Given(
-  'el frontend consume el contrato de {string} de la especificación 002',
-  async function (path) {
-    assert.equal(path, '/api/lotes');
-    assert.deepEqual(await api(this), []);
-  },
-);
+Given('el frontend guarda las partidas en el almacenamiento local del navegador', function () {
+  assert.equal(storage.key('inventory'), 'a-la-par:lotes');
+});
 
 Given('cada partida tiene nombre de producto, caducidad y ubicación', function () {
   assert.deepEqual(Object.keys(sample), ['nombreProducto', 'caducidad', 'ubicacion']);
 });
 
-Given('que el backend contiene varias partidas', async function () {
+Given('que el navegador contiene varias partidas', async function () {
   await seed(this);
 });
+
 Given(
   'que existen dos partidas de {string} con distintas caducidades y ubicaciones',
   async function (name) {
@@ -30,12 +28,15 @@ Given(
     assert.ok(this.lots.every((lot) => lot.nombreProducto === name));
   },
 );
-Given('que el backend devuelve una lista vacía', async function () {
+
+Given('que no hay partidas guardadas en el navegador', async function () {
   await sections.seed(this, []);
 });
+
 Given('que existen dos partidas del mismo producto', async function () {
   await seed(this);
 });
+
 Given('que veo una partida en el inventario', async function () {
   await seed(this, [sample]);
   await open(this);
@@ -74,13 +75,12 @@ Then('veo ambas partidas por separado con sus propios datos', async function () 
 Then(
   'las acciones de cada partida utilizan su identificador, no el nombre del producto',
   async function () {
+    const target = this.lots[1];
     await article(this, 1)
       .getByRole('button', { name: /Ver detalle/ })
       .click();
-    await expect(this.page.locator('.detail')).toContainText(this.lots[1].ubicacion);
-    assert.ok(
-      this.requests.some((request) => request.url.endsWith(`/api/lotes/${this.lots[1].id}`)),
-    );
+    await expect(this.page.locator('.detail')).toContainText(target.ubicacion);
+    assert.deepEqual(await api(this, 'GET', undefined, target.id), target);
   },
 );
 
@@ -104,9 +104,9 @@ When('abro su detalle', async function () {
     .click();
 });
 
-Then('se consulta la partida por su identificador', async function () {
+Then('se recupera la partida por su identificador desde el navegador', async function () {
   await expect(this.page.locator('.detail')).toBeVisible();
-  assert.ok(this.requests.some((request) => request.url.endsWith(`/api/lotes/${this.lots[0].id}`)));
+  assert.deepEqual(await api(this, 'GET', undefined, this.lots[0].id), this.lots[0]);
 });
 
 Then('veo su nombre, caducidad y ubicación completos', async function () {

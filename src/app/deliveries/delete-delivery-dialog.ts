@@ -1,9 +1,9 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { finalize } from 'rxjs';
+import { isNotFound } from '../shared/errors';
 import { deliveryDateLabel, deliveryError, type Delivery } from './delivery';
 import { DeliveryApi } from './delivery-api';
 
@@ -39,9 +39,9 @@ export class DeleteDeliveryDialog {
       )
       .subscribe({
         next: () => this.ref.close('deleted'),
-        error: (error: HttpErrorResponse) => {
+        error: (error: unknown) => {
           this.error.set(deliveryError(error));
-          this.missing.set(error.status === 404);
+          this.missing.set(isNotFound(error));
         },
       });
   }

@@ -1,5 +1,4 @@
 import { DOCUMENT } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
 import {
   afterNextRender,
   Component,
@@ -17,6 +16,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { finalize, type Observable } from 'rxjs';
+import { isNotFound } from '../shared/errors';
 import { DeleteDeliveryDialog } from './delete-delivery-dialog';
 import { DeliveryApi } from './delivery-api';
 import { deliveryDateLabel, deliveryError, type Delivery, type DeliveryData } from './delivery';
@@ -143,12 +143,12 @@ export class DeliveriesPage {
         takeUntilDestroyed(this.destroyRef),
         finalize(() => busy.set(false)),
       )
-      .subscribe({ next, error: (error: HttpErrorResponse) => this.fail(error) });
+      .subscribe({ next, error: (error: unknown) => this.fail(error) });
   }
 
-  private fail(error: HttpErrorResponse): void {
+  private fail(error: unknown): void {
     this.error.set(deliveryError(error));
-    this.missing.set(error.status === 404);
+    this.missing.set(isNotFound(error));
   }
 
   private focusTitle(): void {

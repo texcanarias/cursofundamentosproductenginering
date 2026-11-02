@@ -1,5 +1,6 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { FormControl } from '@angular/forms';
+import { LocalStorageError } from '../shared/browser-storage';
+import { NotFoundError } from '../shared/browser-repository';
 import { calendarDate, expiryLabel, isCalendarDate, lotError, requiredText } from './lot';
 
 describe('Inventory dates and validation', () => {
@@ -31,13 +32,9 @@ describe('Inventory dates and validation', () => {
   });
 
   it('provides actionable error messages without claiming success', () => {
-    expect(lotError(new HttpErrorResponse({ status: 0 }))).toContain('No hay conexión');
-    expect(lotError(new HttpErrorResponse({ status: 404 }))).toContain('ya no está disponible');
-    expect(
-      lotError(
-        new HttpErrorResponse({ status: 400, error: { error: { mensaje: 'Fecha inválida' } } }),
-      ),
-    ).toBe('Fecha inválida');
+    expect(lotError(new LocalStorageError(0))).toContain('No se pudieron leer');
+    expect(lotError(new NotFoundError())).toContain('ya no está disponible');
+    expect(lotError(new LocalStorageError(500))).toContain('No se pudieron guardar');
     expect(lotError(new Error())).toContain('No se pudo completar');
   });
 });

@@ -12,7 +12,12 @@ Vercel detecta automáticamente proyectos Node.js y Angular, y permite configura
 
 - **Backend (Vercel Serverless Function):** Adaptar el backend Express para ejecutarse como función serverless de Vercel. Puerto no configurable (Vercel asigna el puerto automáticamente). CSV paths via env, `npm run start` prod.
 - **Frontend (Vercel Static Site):** Build de producción `ng build`, salida en `dist/front/browser`, servido por CDN global.
-- **Comunicación:** Rewrite rules en `vercel.json` para redirigir `/api/*` al backend serverless.
+- **Persistencia:** el frontend guarda inventario y entregas en el navegador desde la
+  especificación 009. No necesita las reglas de reescritura ni las variables del backend para
+  funcionar.
+- **Backend (opcional):** se conserva la función serverless y su persistencia CSV para usos futuros,
+  pero el frontend actual no consume `/api/*`.
+- **Comunicación:** las rewrite rules de `/api/*` quedan como compatibilidad con el backend opcional.
 - **Variables de entorno:** `LOTES_CSV_PATH`, `ENTREGAS_CSV_PATH`, `NODE_ENV`.
 - **No incluir:** módulos de desarrollo, scripts de test, seeds no versionadas.
 

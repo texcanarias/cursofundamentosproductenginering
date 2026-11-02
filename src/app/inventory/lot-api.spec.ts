@@ -1,53 +1,53 @@
-import { provideHttpClient } from '@angular/common/http';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { firstValueFrom } from 'rxjs';
+import { describe, expect, it, vi } from 'vitest';
 import { LotApi } from './lot-api';
 
+const KEY = 'a-la-par:lotes';
 const data = { nombreProducto: 'Arroz', caducidad: '2027-03-15', ubicacion: 'Almacén A' };
-const lot = { id: 'lot-1', ...data };
 let api: LotApi;
-let http: HttpTestingController;
 
 beforeEach(() => {
-  TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+  localStorage.clear();
+  TestBed.configureTestingModule({});
   api = TestBed.inject(LotApi);
-  http = TestBed.inject(HttpTestingController);
 });
 
-afterEach(() => http.verify());
+afterEach(() => vi.restoreAllMocks());
 
-describe('Lot HTTP contract', () => {
-  it('lists lots and retrieves an individual lot', () => {
-    api.list().subscribe((lots) => expect(lots).toEqual([lot]));
-    http.expectOne({ method: 'GET', url: '/api/lotes' }).flush([lot]);
-    api.get(lot.id).subscribe((result) => expect(result).toEqual(lot));
-    http.expectOne({ method: 'GET', url: '/api/lotes/lot-1' }).flush(lot);
+describe('Lot browser persistence', () => {
+  it('creates and lists lots under the inventory key', async () => {
+    const lot = await firstValueFrom(api.create(data));
+    expect(lot.id).toMatch(/^lot-/);
+    expect(JSON.parse(localStorage.getItem(KEY) ?? '[]')).toEqual([lot]);
+    expect(await firstValueFrom(api.list())).toEqual([lot]);
   });
 
-  it('posts the three editable fields with an unchanged date string', () => {
-    api.create(data).subscribe((result) => expect(result).toEqual(lot));
-    const request = http.expectOne({ method: 'POST', url: '/api/lotes' });
-    expect(request.request.body).toEqual(data);
-    request.flush(lot, { status: 201, statusText: 'Created' });
+  it('gets, updates and deletes by identifier', async () => {
+    const lot = { id: 'one', ...data };
+    const other = { id: 'two', ...data, ubicacion: 'Almacén B' };
+    localStorage.setItem(KEY, JSON.stringify([lot, other]));
+
+    expect(await firstValueFrom(api.get('one'))).toEqual(lot);
+    const updated = await firstValueFrom(api.update('one', { ...data, ubicacion: 'Almacén C' }));
+    expect(updated).toEqual({ id: 'one', ...data, ubicacion: 'Almacén C' });
+    await firstValueFrom(api.delete('one'));
+    expect(await firstValueFrom(api.list())).toEqual([other]);
   });
 
-  it('puts all three fields to the selected identifier', () => {
-    api.update(lot.id, data).subscribe((result) => expect(result).toEqual(lot));
-    const request = http.expectOne({ method: 'PUT', url: '/api/lotes/lot-1' });
-    expect(request.request.body).toEqual(data);
-    request.flush(lot);
+  it('reports a missing lot with status 404', async () => {
+    await expect(firstValueFrom(api.get('missing'))).rejects.toMatchObject({ status: 404 });
   });
 
-  it('deletes only the selected identifier and encodes path segments', () => {
-    api.delete('lot/1').subscribe();
-    http
-      .expectOne({ method: 'DELETE', url: '/api/lotes/lot%2F1' })
-      .flush(null, { status: 204, statusText: 'No Content' });
-  });
+  it('reports corrupt data and failed writes without losing saved records', async () => {
+    localStorage.setItem(KEY, '{invalid');
+    await expect(firstValueFrom(api.list())).rejects.toMatchObject({ status: 0 });
 
-  it('propagates errors without retrying writes', () => {
-    api.create(data).subscribe({ error: (error) => expect(error.status).toBe(500) });
-    http.expectOne('/api/lotes').flush({}, { status: 500, statusText: 'Error' });
-    http.expectNone('/api/lotes');
+    localStorage.setItem(KEY, '[]');
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('quota');
+    });
+    await expect(firstValueFrom(api.create(data))).rejects.toMatchObject({ status: 500 });
+    expect(localStorage.getItem(KEY)).toBe('[]');
   });
 });

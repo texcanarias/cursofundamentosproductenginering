@@ -1,29 +1,27 @@
-import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { BrowserRepository } from '../shared/browser-repository';
 import type { Delivery, DeliveryData } from './delivery';
+
+const KEY = 'a-la-par:entregas';
 
 @Injectable({ providedIn: 'root' })
 export class DeliveryApi {
-  private readonly http = inject(HttpClient);
-  private readonly url = '/api/entregas';
+  private readonly repository = new BrowserRepository<Delivery, DeliveryData>(KEY, 'delivery');
 
-  list() {
-    return this.http.get<Delivery[]>(this.url);
+  list(): Observable<Delivery[]> {
+    return this.repository.list();
   }
 
-  get(id: string) {
-    return this.http.get<Delivery>(this.path(id));
+  get(id: string): Observable<Delivery> {
+    return this.repository.get(id);
   }
 
-  create(data: DeliveryData) {
-    return this.http.post<Delivery>(this.url, data);
+  create(data: DeliveryData): Observable<Delivery> {
+    return this.repository.create(data);
   }
 
-  delete(id: string) {
-    return this.http.delete<void>(this.path(id));
-  }
-
-  private path(id: string): string {
-    return `${this.url}/${encodeURIComponent(id)}`;
+  delete(id: string): Observable<void> {
+    return this.repository.delete(id);
   }
 }
